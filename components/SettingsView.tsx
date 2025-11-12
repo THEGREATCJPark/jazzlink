@@ -106,7 +106,10 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
   };
 
   const handleGoogleSignIn = async () => {
-    if (!auth) return;
+    if (!auth) {
+        alert("인증 서비스를 시작할 수 없습니다. API 키가 올바르게 설정되었는지 확인해주세요.");
+        return;
+    }
     setAuthError(null);
     const provider = new GoogleAuthProvider();
     try {

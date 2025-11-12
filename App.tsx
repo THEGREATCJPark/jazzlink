@@ -119,7 +119,15 @@ const App: React.FC = () => {
       return;
     }
     
-    getRedirectResult(auth).catch((error) => console.error("Google redirect error", error));
+    getRedirectResult(auth).catch((error) => {
+        console.error("Google redirect error", error);
+        // Provide user-facing feedback for the most common redirect error.
+        if (error.code === 'auth/unauthorized-domain') {
+           alert(`로그인 실패: 현재 도메인은 Firebase에서 승인되지 않았습니다. Firebase 콘솔의 Authentication > Settings > Authorized domains에 현재 페이지의 전체 URL(예: ${window.location.origin})을 추가해주세요.`);
+        } else {
+           alert(`Google 로그인 처리 중 오류가 발생했습니다: ${error.message}`);
+        }
+    });
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (user) {
