@@ -258,11 +258,10 @@ const VenueDetailModal: React.FC<{ venue: Venue; onClose: () => void; currentUse
                 {reviewsLoading ? <p className="text-sm text-gray-400 dark:text-jazz-gray-500">후기 로딩 중...</p> : reviews.length > 0 ? reviews.map(review => {
                     const isReviewAnonymous = review.isAnonymous;
                     const author = isReviewAnonymous ? null : usersData.get(review.authorUid);
-                    {/* Fix: Ensure authorName and authorPhoto are strings to prevent type errors. */}
-                    const authorName = isReviewAnonymous ? '익명' : ((author && typeof author.name === 'string' && author.name) || '익명');
+                    const authorName = isReviewAnonymous ? '익명' : (author && typeof author.name === 'string' && author.name) || '익명';
                     const authorPhoto = isReviewAnonymous
                         ? `https://ui-avatars.com/api/?name=?&background=656E7C&color=FFFFFF`
-                        : (author?.photo && typeof author.photo === 'string') ? author.photo : `https://ui-avatars.com/api/?name=${encodeURIComponent((author && typeof author.name === 'string' && author.name) || '?')}`;
+                        : (author?.photo && typeof author.photo === 'string') ? author.photo : `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName === '익명' ? '?' : authorName)}`;
 
                     return (<div key={review.id} className="border-t border-gray-100 dark:border-jazz-blue-700 pt-3">
                                 <div className="flex items-center mb-1">
@@ -446,11 +445,10 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
                         {reviewsLoading ? <p className="text-sm text-gray-400 dark:text-jazz-gray-500">후기 로딩 중...</p> : reviews.length > 0 ? reviews.map(review => {
                              const isReviewAnonymous = review.isAnonymous;
                              const author = isReviewAnonymous ? null : usersData.get(review.authorUid);
-                             {/* Fix: Ensure authorName and authorPhoto are strings to prevent type errors. */}
-                             const authorName = isReviewAnonymous ? '익명' : ((author && typeof author.name === 'string' && author.name) || '익명');
+                             const authorName = isReviewAnonymous ? '익명' : (author && typeof author.name === 'string' && author.name) || '익명';
                              const authorPhoto = isReviewAnonymous
                                  ? `https://ui-avatars.com/api/?name=?&background=656E7C&color=FFFFFF`
-                                 : (author?.photo && typeof author.photo === 'string') ? author.photo : `https://ui-avatars.com/api/?name=${encodeURIComponent((author && typeof author.name === 'string' && author.name) || '?')}`;
+                                 : (author?.photo && typeof author.photo === 'string') ? author.photo : `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName === '익명' ? '?' : authorName)}`;
                             return (<div key={review.id} className="border-t border-gray-100 dark:border-jazz-blue-700 pt-3">
                                         <div className="flex items-center mb-1">
                                             <img src={authorPhoto} alt={authorName} className="w-6 h-6 rounded-full mr-2" />
@@ -625,11 +623,10 @@ const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelect
                         {reviewsLoading ? <p className="text-sm text-gray-400 dark:text-jazz-gray-500">후기 로딩 중...</p> : reviews.length > 0 ? reviews.map(review => {
                             const isReviewAnonymous = review.isAnonymous;
                             const author = isReviewAnonymous ? null : usersData.get(review.authorUid);
-                            {/* Fix: Ensure authorName and authorPhoto are strings to prevent type errors. */}
-                            const authorName = isReviewAnonymous ? '익명' : ((author && typeof author.name === 'string' && author.name) || '익명');
+                            const authorName = isReviewAnonymous ? '익명' : (author && typeof author.name === 'string' && author.name) || '익명';
                             const authorPhoto = isReviewAnonymous
                                 ? `https://ui-avatars.com/api/?name=?&background=656E7C&color=FFFFFF`
-                                : (author?.photo && typeof author.photo === 'string') ? author.photo : `https://ui-avatars.com/api/?name=${encodeURIComponent((author && typeof author.name === 'string' && author.name) || '?')}`;
+                                : (author?.photo && typeof author.photo === 'string') ? author.photo : `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName === '익명' ? '?' : authorName)}`;
                             return (<div key={review.id} className="border-t border-gray-100 dark:border-jazz-blue-700 pt-3">
                                         <div className="flex items-center mb-1">
                                             <img src={authorPhoto} alt={authorName} className="w-6 h-6 rounded-full mr-2" />
