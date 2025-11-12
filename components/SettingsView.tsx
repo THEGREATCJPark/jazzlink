@@ -37,8 +37,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
   const [isProcessing, setIsProcessing] = useState(false);
   const [resetMessageSent, setResetMessageSent] = useState(false);
   const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
-  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-  const [feedbackText, setFeedbackText] = useState('');
 
 
   useEffect(() => {
@@ -177,16 +175,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
     }
   }
 
-  const handleFeedbackSubmit = () => {
-    if (!feedbackText.trim()) {
-        alert('피드백 내용을 입력해주세요.');
-        return;
-    }
-    const mailtoLink = `mailto:jazzlink1961@gmail.com?subject=${encodeURIComponent('Jazzlink 피드백')}&body=${encodeURIComponent(feedbackText)}`;
-    window.location.href = mailtoLink;
-    setFeedbackText('');
-    setShowFeedbackModal(false);
-  };
 
   const handleLogout = async () => {
     if (!auth) return;
@@ -295,9 +283,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
             <a href="https://realbook.site" target="_blank" rel="noopener noreferrer" className="block w-full bg-gray-100 dark:bg-jazz-blue-800 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-jazz-blue-700 transition-colors">
                 리얼북 확인하기
             </a>
-            <button onClick={() => setShowFeedbackModal(true)} className="w-full bg-gray-100 dark:bg-jazz-blue-800 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-jazz-blue-700 transition-colors">
-                피드백 남기기
-            </button>
             {deferredInstallPrompt && (
                 <button onClick={handleInstallClick} className="w-full bg-gray-100 dark:bg-jazz-blue-800 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-jazz-blue-700 transition-colors">
                     앱 설치하기
@@ -396,25 +381,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
                 </button>
                 </>
             )}
-        </div>
-      )}
-      {showFeedbackModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 animate-fade-in">
-            <div className="bg-white dark:bg-jazz-blue-800 rounded-lg max-w-sm w-full mx-4 p-6">
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">피드백 남기기</h2>
-                <p className="text-sm text-gray-600 dark:text-jazz-gray-300 mb-4">Jazzlink 서비스 개선을 위한 소중한 의견을 보내주세요. 앱에 대한 아이디어나 불편한 점을 자유롭게 작성해주시면 큰 도움이 됩니다.</p>
-                <textarea
-                    value={feedbackText}
-                    onChange={(e) => setFeedbackText(e.target.value)}
-                    rows={6}
-                    placeholder="여기에 피드백을 입력하세요..."
-                    className="w-full bg-gray-100 dark:bg-jazz-blue-700 border border-gray-300 dark:border-jazz-blue-600 rounded-md p-3 text-gray-800 dark:text-gray-200 focus:ring-jazz-blue-900 focus:border-jazz-blue-900"
-                />
-                <div className="mt-4 flex justify-end space-x-2">
-                    <button onClick={() => setShowFeedbackModal(false)} className="px-4 py-2 rounded-md text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-jazz-blue-700 hover:bg-gray-300 dark:hover:bg-jazz-blue-600 font-semibold">취소</button>
-                    <button onClick={handleFeedbackSubmit} className="px-4 py-2 rounded-md bg-jazz-blue-900 dark:bg-jazz-gold-500 text-white dark:text-jazz-blue-900 font-bold">보내기</button>
-                </div>
-            </div>
         </div>
       )}
     </div>

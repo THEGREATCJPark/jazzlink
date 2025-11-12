@@ -8,7 +8,7 @@ import { getStorage } from 'firebase/storage';
 // Updated with your Firebase project configuration
 export const firebaseConfig = {
   apiKey: "AIzaSyCHho2lTCw5DUNPdaieHF-OJWGXNocom58",
-  authDomain: "jazzlink.kr",
+  authDomain: "jazzlink-eb611.web.app",
   projectId: "jazzlink-eb611",
   storageBucket: "jazzlink-eb611.firebasestorage.app",
   messagingSenderId: "597781140601",

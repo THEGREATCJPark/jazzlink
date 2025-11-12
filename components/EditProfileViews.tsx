@@ -64,7 +64,7 @@ export const EditGeneralProfileView: React.FC<EditViewProps & { userId: string }
             await updateDoc(doc(db, 'users', userId), { name, photo: newPhotoURL });
 
             alert('프로필이 업데이트되었습니다.');
-            setCurrentView('설정');
+            setCurrentView('MY');
         } catch (err: any) {
             console.error("Error updating general profile:", err.message, err.code);
             let errorMessage = '프로필 업데이트에 실패했습니다. 다시 시도해주세요.';
