@@ -12,5 +12,5 @@ jobs:
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          serviceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_JAZZLINK_EB611 }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_JAZZLINK_EB611 }}'
           projectId: jazzlink-eb611
