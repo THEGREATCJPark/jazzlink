@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jazzlink-cache-v1';
+const CACHE_NAME = 'jazzlink-cache-v2';
 const urlsToCache = [
   '/',
   '/index.html',
