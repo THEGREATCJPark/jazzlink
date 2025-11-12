@@ -339,13 +339,13 @@ const App: React.FC = () => {
        )}
 
       {isBottomNavVisible && currentView === '홈' && (
-         <button onClick={handleNewPostClick} className="fixed bottom-24 right-5 w-14 h-14 bg-jazz-blue-900 dark:bg-jazz-gold-500 rounded-full flex items-center justify-center shadow-lg hover:bg-jazz-blue-800 dark:hover:bg-jazz-gold-600 transition-transform hover:scale-105 z-30">
+         <button onClick={handleNewPostClick} className="absolute bottom-24 right-5 w-14 h-14 bg-jazz-blue-900 dark:bg-jazz-gold-500 rounded-full flex items-center justify-center shadow-lg hover:bg-jazz-blue-800 dark:hover:bg-jazz-gold-600 transition-transform hover:scale-105 z-30">
             <PencilIcon className="w-7 h-7 text-white dark:text-jazz-blue-900" />
          </button>
       )}
       
       {isBottomNavVisible && currentView === '프로필' && profileViewTab === '연주팀' && (
-         <button onClick={() => handleSetView('프로필 생성 (연주팀)')} className="fixed bottom-24 right-5 w-14 h-14 bg-jazz-blue-900 dark:bg-jazz-gold-500 rounded-full flex items-center justify-center shadow-lg hover:bg-jazz-blue-800 dark:hover:bg-jazz-gold-600 transition-transform hover:scale-105 z-30">
+         <button onClick={() => handleSetView('프로필 생성 (연주팀)')} className="absolute bottom-24 right-5 w-14 h-14 bg-jazz-blue-900 dark:bg-jazz-gold-500 rounded-full flex items-center justify-center shadow-lg hover:bg-jazz-blue-800 dark:hover:bg-jazz-gold-600 transition-transform hover:scale-105 z-30">
             <PlusIcon className="w-7 h-7 text-white dark:text-jazz-blue-900" />
          </button>
       )}
