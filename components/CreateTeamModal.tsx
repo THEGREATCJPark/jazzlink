@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { db } from '../firebase/config';
 import { collection, addDoc } from 'firebase/firestore';
@@ -41,7 +42,7 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ onClose, onTeamCreate
                 region,
                 youtubeUrl,
                 instagramUrl: instagramId ? `https://instagram.com/${instagramId.replace('@', '')}` : '',
-                teamPhoto: `https://ui-avatars.com/api/?name=${teamName}&background=1A263A&color=FFC700&size=256`,
+                teamPhotos: [`https://ui-avatars.com/api/?name=${teamName}&background=1A263A&color=FFC700&size=256`],
                 ownerUid: currentUser.uid,
                 members: [], // Members will be added after musician profile is created
             };

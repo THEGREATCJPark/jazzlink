@@ -309,7 +309,7 @@ const App: React.FC = () => {
                  )}
                </div>
                 <h1 className="text-xl font-bold text-jazz-blue-900 dark:text-white text-center flex-grow truncate">
-                   <button onClick={() => handleSetView('홈')} className="text-2xl font-bold text-jazz-blue-900 dark:text-white mr-auto">Jazzlink</button>
+                   {getHeaderTitle()}
                </h1>
                <div className="w-10 flex justify-end" />
              </>
