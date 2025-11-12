@@ -258,9 +258,10 @@ const VenueDetailModal: React.FC<{ venue: Venue; onClose: () => void; currentUse
                     const isReviewAnonymous = review.isAnonymous;
                     const author = isReviewAnonymous ? null : usersData.get(review.authorUid);
                     const authorName = isReviewAnonymous ? '익명' : author?.name || '익명';
-                    const authorPhoto = isReviewAnonymous 
+                    // Fix: Correctly handle nullable author photo to prevent invalid image source.
+                    const authorPhoto = isReviewAnonymous
                         ? `https://ui-avatars.com/api/?name=?&background=656E7C&color=FFFFFF`
-                        : author?.photo || `https://ui-avatars.com/api/?name=${author?.name || '?'}`;
+                        : author?.photo ? author.photo : `https://ui-avatars.com/api/?name=${String(author?.name || '?')}`;
 
                     return (<div key={review.id} className="border-t border-gray-100 dark:border-jazz-blue-700 pt-3">
                                 <div className="flex items-center mb-1">
@@ -445,9 +446,10 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
                              const isReviewAnonymous = review.isAnonymous;
                              const author = isReviewAnonymous ? null : usersData.get(review.authorUid);
                              const authorName = isReviewAnonymous ? '익명' : author?.name || '익명';
-                             const authorPhoto = isReviewAnonymous 
+                             // Fix: Correctly handle nullable author photo to prevent invalid image source.
+                             const authorPhoto = isReviewAnonymous
                                  ? `https://ui-avatars.com/api/?name=?&background=656E7C&color=FFFFFF`
-                                 : author?.photo || `https://ui-avatars.com/api/?name=${author?.name || '?'}`;
+                                 : author?.photo ? author.photo : `https://ui-avatars.com/api/?name=${String(author?.name || '?')}`;
                             return (<div key={review.id} className="border-t border-gray-100 dark:border-jazz-blue-700 pt-3">
                                         <div className="flex items-center mb-1">
                                             <img src={authorPhoto} alt={authorName} className="w-6 h-6 rounded-full mr-2" />
@@ -623,9 +625,10 @@ const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelect
                             const isReviewAnonymous = review.isAnonymous;
                             const author = isReviewAnonymous ? null : usersData.get(review.authorUid);
                             const authorName = isReviewAnonymous ? '익명' : author?.name || '익명';
-                            const authorPhoto = isReviewAnonymous 
+                            // Fix: Correctly handle nullable author photo to prevent invalid image source.
+                            const authorPhoto = isReviewAnonymous
                                 ? `https://ui-avatars.com/api/?name=?&background=656E7C&color=FFFFFF`
-                                : author?.photo || `https://ui-avatars.com/api/?name=${author?.name || '?'}`;
+                                : author?.photo ? author.photo : `https://ui-avatars.com/api/?name=${String(author?.name || '?')}`;
                             return (<div key={review.id} className="border-t border-gray-100 dark:border-jazz-blue-700 pt-3">
                                         <div className="flex items-center mb-1">
                                             <img src={authorPhoto} alt={authorName} className="w-6 h-6 rounded-full mr-2" />

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { db } from '../firebase/config';
 import { collection, addDoc } from 'firebase/firestore';
@@ -41,14 +42,15 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ onClose, onTeamCreate
                 region,
                 youtubeUrl,
                 instagramUrl: instagramId ? `https://instagram.com/${instagramId.replace('@', '')}` : '',
-                teamPhoto: `https://ui-avatars.com/api/?name=${teamName}&background=1A263A&color=FFC700&size=256`,
+                // Fix: Changed teamPhoto to teamPhotos and made it an array to match the Team interface.
+                teamPhotos: [`https://ui-avatars.com/api/?name=${teamName}&background=1A263A&color=FFC700&size=256`],
                 ownerUid: currentUser.uid,
                 members: [], // Members will be added after musician profile is created
             };
 
             const docRef = await addDoc(collection(db, 'teams'), newTeamData);
             
-            onTeamCreated({ id: docRef.id, ...newTeamData });
+            onTeamCreated({ id: docRef.id, ...newTeamData, teamPhotos: newTeamData.teamPhotos });
 
         } catch (err) {
             console.error("Error creating team:", err);
