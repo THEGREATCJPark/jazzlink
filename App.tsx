@@ -119,15 +119,7 @@ const App: React.FC = () => {
       return;
     }
     
-    getRedirectResult(auth).catch((error) => {
-        console.error("Google redirect error", error);
-        // Provide user-facing feedback for the most common redirect error.
-        if (error.code === 'auth/unauthorized-domain') {
-           alert(`로그인 실패: 현재 도메인은 Firebase에서 승인되지 않았습니다. Firebase 콘솔의 Authentication > Settings > Authorized domains에 현재 페이지의 전체 URL(예: ${window.location.origin})을 추가해주세요.`);
-        } else {
-           alert(`Google 로그인 처리 중 오류가 발생했습니다: ${error.message}`);
-        }
-    });
+    getRedirectResult(auth).catch((error) => console.error("Google redirect error", error));
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (user) {
@@ -317,7 +309,7 @@ const App: React.FC = () => {
                  )}
                </div>
                 <h1 className="text-xl font-bold text-jazz-blue-900 dark:text-white text-center flex-grow truncate">
-                   {getHeaderTitle()}
+                   <button onClick={() => handleSetView('홈')} className="text-2xl font-bold text-jazz-blue-900 dark:text-white mr-auto">Jazzlink</button>
                </h1>
                <div className="w-10 flex justify-end" />
              </>
@@ -347,13 +339,13 @@ const App: React.FC = () => {
        )}
 
       {isBottomNavVisible && currentView === '홈' && (
-         <button onClick={handleNewPostClick} className="absolute bottom-24 right-5 w-14 h-14 bg-jazz-blue-900 dark:bg-jazz-gold-500 rounded-full flex items-center justify-center shadow-lg hover:bg-jazz-blue-800 dark:hover:bg-jazz-gold-600 transition-transform hover:scale-105 z-30">
+         <button onClick={handleNewPostClick} className="fixed bottom-24 right-5 w-14 h-14 bg-jazz-blue-900 dark:bg-jazz-gold-500 rounded-full flex items-center justify-center shadow-lg hover:bg-jazz-blue-800 dark:hover:bg-jazz-gold-600 transition-transform hover:scale-105 z-30">
             <PencilIcon className="w-7 h-7 text-white dark:text-jazz-blue-900" />
          </button>
       )}
       
       {isBottomNavVisible && currentView === '프로필' && profileViewTab === '연주팀' && (
-         <button onClick={() => handleSetView('프로필 생성 (연주팀)')} className="absolute bottom-24 right-5 w-14 h-14 bg-jazz-blue-900 dark:bg-jazz-gold-500 rounded-full flex items-center justify-center shadow-lg hover:bg-jazz-blue-800 dark:hover:bg-jazz-gold-600 transition-transform hover:scale-105 z-30">
+         <button onClick={() => handleSetView('프로필 생성 (연주팀)')} className="fixed bottom-24 right-5 w-14 h-14 bg-jazz-blue-900 dark:bg-jazz-gold-500 rounded-full flex items-center justify-center shadow-lg hover:bg-jazz-blue-800 dark:hover:bg-jazz-gold-600 transition-transform hover:scale-105 z-30">
             <PlusIcon className="w-7 h-7 text-white dark:text-jazz-blue-900" />
          </button>
       )}

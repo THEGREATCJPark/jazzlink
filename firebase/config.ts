@@ -5,9 +5,9 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
-// API Key is now securely accessed from environment variables.
+// Updated with your Firebase project configuration
 export const firebaseConfig = {
-  apiKey: process.env.API_KEY,
+  apiKey: "AIzaSyCHho2lTCw5DUNPdaieHF-OJWGXNocom58",
   authDomain: "jazzlink.kr",
   projectId: "jazzlink-eb611",
   storageBucket: "jazzlink-eb611.firebasestorage.app",
@@ -16,21 +16,21 @@ export const firebaseConfig = {
   measurementId: "G-KYKWMKGVJH"
 };
 
-// Check if the API key is provided via environment variables.
-// If not, the app will run in offline mode with mock data.
-export const USE_MOCK_DATA = !firebaseConfig.apiKey;
+// Check if the config is still using placeholder values.
+// This will now be false, so the app will connect to Firebase.
+export const USE_MOCK_DATA = firebaseConfig.apiKey === "YOUR_API_KEY";
 
 if (USE_MOCK_DATA) {
     console.warn(`
     *****************************************************************
-    * Firebase API_KEY is not configured.                           *
+    * Firebase configuration is missing in 'firebase/config.ts'.    *
     * The application is running in OFFLINE MODE with mock data.    *
-    * To connect to Firebase, please set the API_KEY env variable.  *
+    * To connect to Firebase, please update the configuration file. *
     *****************************************************************
     `);
 }
 
-// Initialize Firebase only if the API key is available.
+// Initialize Firebase only if the config is not a placeholder.
 const app = USE_MOCK_DATA ? null : initializeApp(firebaseConfig);
 
 export const auth = app ? getAuth(app) : null;
