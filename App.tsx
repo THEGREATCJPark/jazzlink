@@ -266,9 +266,9 @@ const App: React.FC = () => {
   const isCreationFlow = ['프로필 생성', '프로필 수정', '프로필 생성 (재즈바)', '프로필 생성 (연주팀)'].includes(currentView) || isCreatingPost;
 
   return (
-    <div className="relative max-w-md mx-auto bg-gray-50 dark:bg-jazz-blue-900 text-gray-800 dark:text-gray-200 min-h-screen font-sans">
+    <div className="relative max-w-md mx-auto bg-gray-50 dark:bg-jazz-blue-900 text-gray-800 dark:text-gray-200 h-screen font-sans flex flex-col overflow-hidden">
       {!isCreationFlow && (
-        <header className="sticky top-0 bg-white/80 dark:bg-jazz-blue-900/80 backdrop-blur-sm z-20 p-4 border-b border-gray-200 dark:border-jazz-blue-700 flex items-center h-16">
+        <header className="sticky top-0 bg-white/80 dark:bg-jazz-blue-900/80 backdrop-blur-sm z-20 p-4 border-b border-gray-200 dark:border-jazz-blue-700 flex items-center h-16 flex-shrink-0">
            {currentView === '홈' ? (
              <>
                <h1 className="text-2xl font-bold text-jazz-blue-900 dark:text-white">Jazzlink</h1>
@@ -293,7 +293,7 @@ const App: React.FC = () => {
         </header>
       )}
       
-      <main className={isBottomNavVisible ? 'pb-20' : ''}>
+      <main className={`flex-grow overflow-y-auto ${isBottomNavVisible ? 'pb-20' : ''}`}>
         {renderView()}
       </main>
 
@@ -316,13 +316,13 @@ const App: React.FC = () => {
        )}
 
       {isBottomNavVisible && currentView === '홈' && (
-         <button onClick={handleNewPostClick} className="absolute bottom-24 right-5 w-14 h-14 bg-jazz-blue-900 dark:bg-jazz-gold-500 rounded-full flex items-center justify-center shadow-lg hover:bg-jazz-blue-800 dark:hover:bg-jazz-gold-600 transition-transform hover:scale-105 z-30">
+         <button onClick={handleNewPostClick} className="absolute bottom-28 right-5 w-14 h-14 bg-jazz-blue-900 dark:bg-jazz-gold-500 rounded-full flex items-center justify-center shadow-lg hover:bg-jazz-blue-800 dark:hover:bg-jazz-gold-600 transition-transform hover:scale-105 z-30">
             <PencilIcon className="w-7 h-7 text-white dark:text-jazz-blue-900" />
          </button>
       )}
       
       {isBottomNavVisible && currentView === '프로필' && profileViewTab === '연주팀' && (
-         <button onClick={() => handleSetView('프로필 생성 (연주팀)')} className="absolute bottom-24 right-5 w-14 h-14 bg-jazz-blue-900 dark:bg-jazz-gold-500 rounded-full flex items-center justify-center shadow-lg hover:bg-jazz-blue-800 dark:hover:bg-jazz-gold-600 transition-transform hover:scale-105 z-30">
+         <button onClick={() => handleSetView('프로필 생성 (연주팀)')} className="absolute bottom-28 right-5 w-14 h-14 bg-jazz-blue-900 dark:bg-jazz-gold-500 rounded-full flex items-center justify-center shadow-lg hover:bg-jazz-blue-800 dark:hover:bg-jazz-gold-600 transition-transform hover:scale-105 z-30">
             <PlusIcon className="w-7 h-7 text-white dark:text-jazz-blue-900" />
          </button>
       )}
