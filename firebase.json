@@ -1,4 +1,3 @@
-
 {
   "firestore": {
     "rules": "firestore.rules",
@@ -14,7 +13,7 @@
     ],
     "rewrites": [
       {
-        "source": "/**",
+        "source": "!/(*.*)",
         "destination": "/index.html"
       }
     ]
