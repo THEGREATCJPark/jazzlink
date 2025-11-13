@@ -52,20 +52,19 @@
     "firebase/auth": "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js",
     "firebase/firestore": "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js",
     "firebase/storage": "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js",
-    "fs": "https://aistudiocdn.com/fs@^0.0.1-security",
     "path": "https://aistudiocdn.com/path@^0.12.7",
     "firebase/": "https://aistudiocdn.com/firebase@^12.5.0/",
     "firebase-admin": "https://aistudiocdn.com/firebase-admin@^13.6.0",
+    "fs": "https://aistudiocdn.com/fs@^0.0.1-security",
     "url": "https://aistudiocdn.com/url@^0.11.4"
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body class="bg-gray-50 dark:bg-jazz-blue-900">
   <div id="root"></div>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script type="text/babel" data-type="module" src="/index.tsx" data-presets="react,typescript"></script>
+  <script type="text/babel" data-type="module" src="./index.tsx" data-presets="react,typescript"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -77,6 +76,5 @@
       });
     }
   </script>
-<script type="module" src="/index.tsx"></script>
 </body>
 </html>

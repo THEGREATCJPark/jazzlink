@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { db, USE_MOCK_DATA } from '../firebase/config.ts';
 import { collection, getDocs, doc, getDoc, query, orderBy, runTransaction, Timestamp } from 'firebase/firestore';
@@ -257,14 +258,14 @@ const VenueDetailModal: React.FC<{ venue: Venue; onClose: () => void; currentUse
                 {reviewsLoading ? <p className="text-sm text-gray-400 dark:text-jazz-gray-500">후기 로딩 중...</p> : reviews.length > 0 ? reviews.map(review => {
                     const isReviewAnonymous = review.isAnonymous;
                     const author = isReviewAnonymous ? null : usersData.get(review.authorUid);
-                    const authorName = isReviewAnonymous ? '익명' : author?.name || '익명';
+                    const authorName = isReviewAnonymous ? '익명' : (author?.name || '익명');
                     const authorPhoto = isReviewAnonymous 
                         ? `https://ui-avatars.com/api/?name=?&background=656E7C&color=FFFFFF`
                         : author?.photo || `https://ui-avatars.com/api/?name=${author?.name || '?'}`;
 
                     return (<div key={review.id} className="border-t border-gray-100 dark:border-jazz-blue-700 pt-3">
                                 <div className="flex items-center mb-1">
-                                    <img src={authorPhoto} alt={authorName} className="w-6 h-6 rounded-full mr-2" />
+                                    <img src={authorPhoto} alt={String(authorName)} className="w-6 h-6 rounded-full mr-2" />
                                     <span className="font-bold text-sm text-gray-800 dark:text-gray-200">{authorName}</span>
                                     <div className="flex ml-auto">{[...Array(5)].map((_, i) => <StarIcon key={i} className="w-4 h-4 text-yellow-500" filled={i < review.rating} />)}</div>
                                 </div>
@@ -444,13 +445,13 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
                         {reviewsLoading ? <p className="text-sm text-gray-400 dark:text-jazz-gray-500">후기 로딩 중...</p> : reviews.length > 0 ? reviews.map(review => {
                              const isReviewAnonymous = review.isAnonymous;
                              const author = isReviewAnonymous ? null : usersData.get(review.authorUid);
-                             const authorName = isReviewAnonymous ? '익명' : author?.name || '익명';
+                             const authorName = isReviewAnonymous ? '익명' : (author?.name || '익명');
                              const authorPhoto = isReviewAnonymous 
                                  ? `https://ui-avatars.com/api/?name=?&background=656E7C&color=FFFFFF`
                                  : author?.photo || `https://ui-avatars.com/api/?name=${author?.name || '?'}`;
                             return (<div key={review.id} className="border-t border-gray-100 dark:border-jazz-blue-700 pt-3">
                                         <div className="flex items-center mb-1">
-                                            <img src={authorPhoto} alt={authorName} className="w-6 h-6 rounded-full mr-2" />
+                                            <img src={authorPhoto} alt={String(authorName)} className="w-6 h-6 rounded-full mr-2" />
                                             <span className="font-bold text-sm text-gray-800 dark:text-gray-200">{authorName}</span>
                                             <div className="flex ml-auto">{[...Array(5)].map((_, i) => <StarIcon key={i} className="w-4 h-4 text-yellow-500" filled={i < review.rating} />)}</div>
                                         </div>
@@ -622,13 +623,13 @@ const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelect
                         {reviewsLoading ? <p className="text-sm text-gray-400 dark:text-jazz-gray-500">후기 로딩 중...</p> : reviews.length > 0 ? reviews.map(review => {
                             const isReviewAnonymous = review.isAnonymous;
                             const author = isReviewAnonymous ? null : usersData.get(review.authorUid);
-                            const authorName = isReviewAnonymous ? '익명' : author?.name || '익명';
+                            const authorName = isReviewAnonymous ? '익명' : (author?.name || '익명');
                             const authorPhoto = isReviewAnonymous 
                                 ? `https://ui-avatars.com/api/?name=?&background=656E7C&color=FFFFFF`
                                 : author?.photo || `https://ui-avatars.com/api/?name=${author?.name || '?'}`;
                             return (<div key={review.id} className="border-t border-gray-100 dark:border-jazz-blue-700 pt-3">
                                         <div className="flex items-center mb-1">
-                                            <img src={authorPhoto} alt={authorName} className="w-6 h-6 rounded-full mr-2" />
+                                            <img src={authorPhoto} alt={String(authorName)} className="w-6 h-6 rounded-full mr-2" />
                                             <span className="font-bold text-sm text-gray-800 dark:text-gray-200">{authorName}</span>
                                             <div className="flex ml-auto">{[...Array(5)].map((_, i) => <StarIcon key={i} className="w-4 h-4 text-yellow-500" filled={i < review.rating} />)}</div>
                                         </div>
@@ -661,8 +662,8 @@ const ProfileView: React.FC<ProfileViewProps> = ({ currentUser, navigateToEditor
     const fetchData = async () => {
       setLoading(true);
       if (USE_MOCK_DATA || !db) {
-        setMusicians(mockMusicians as any[]);
-        setTeams(mockTeams as any[]);
+        setMusicians(mockMusicians); // mockMusicians의 타입이 Musician[]과 일치하도록 mockData.ts를 수정해야 합니다.
+        setTeams(mockTeams);         // mockTeams의 타입이 Team[]과 일치하도록 mockData.ts를 수정해야 합니다.
         setVenues(mockVenues);
         setLoading(false);
         return;
@@ -679,8 +680,8 @@ const ProfileView: React.FC<ProfileViewProps> = ({ currentUser, navigateToEditor
       } catch (error) {
         console.error("Error fetching profiles:", error);
         console.warn("Falling back to mock data due to Firestore error.");
-        setMusicians(mockMusicians as any[]);
-        setTeams(mockTeams as any[]);
+        setMusicians(mockMusicians);
+        setTeams(mockTeams);
         setVenues(mockVenues);
       }
       setLoading(false);
