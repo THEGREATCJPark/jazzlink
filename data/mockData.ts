@@ -1,5 +1,5 @@
 
-import { User, CommunityFeed, Venue, Musician, Team, Performance, Comment } from '../types.ts';
+import { User, CommunityFeed, Venue, Musician, Team, Performance, Comment } from '../types';
 
 // This mock data is now primarily for reference, as the app will fetch live data from Firebase.
 export const users: User[] = [

@@ -1,11 +1,11 @@
 
 
 import React, { useState, useEffect, useRef } from 'react';
-import { db, storage } from '../firebase/config.ts';
+import { db, storage } from '../firebase/config';
 import { doc, getDoc, updateDoc, collection, getDocs, writeBatch, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { User as FirebaseUser, updateProfile } from 'firebase/auth';
-import { ViewType, Musician, Venue, User as UserType, Team } from '../types.ts';
-import CreateTeamModal from './CreateTeamModal.tsx';
+import { ViewType, Musician, Venue, User as UserType, Team } from '../types';
+import CreateTeamModal from './CreateTeamModal';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 
@@ -64,7 +64,7 @@ export const EditGeneralProfileView: React.FC<EditViewProps & { userId: string }
             await updateDoc(doc(db, 'users', userId), { name, photo: newPhotoURL });
 
             alert('프로필이 업데이트되었습니다.');
-            setCurrentView('설정');
+            setCurrentView('MY');
         } catch (err: any) {
             console.error("Error updating general profile:", err.message, err.code);
             let errorMessage = '프로필 업데이트에 실패했습니다. 다시 시도해주세요.';

@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { db, storage } from '../firebase/config.ts';
+import { db, storage } from '../firebase/config';
 import { collection, addDoc, query, where, getDocs, doc, updateDoc, arrayUnion, getDoc, writeBatch, arrayRemove } from 'firebase/firestore';
 import { User as FirebaseUser, updateProfile } from 'firebase/auth';
-import { ViewType, Team, Musician } from '../types.ts';
-import CreateTeamModal from './CreateTeamModal.tsx';
+import { ViewType, Team, Musician } from '../types';
+import CreateTeamModal from './CreateTeamModal';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import ChevronLeftIcon from './icons/ChevronLeftIcon.tsx';
+import ChevronLeftIcon from './icons/ChevronLeftIcon';
 
 interface MusicianProfileEditorProps {
     currentUser: FirebaseUser | null;
@@ -376,13 +376,13 @@ const CreateMusicianProfileView: React.FC<MusicianProfileEditorProps> = ({ curre
 
     const wizardHeader = (
         <div className="p-4 flex items-center border-b border-gray-200">
-            <button onClick={step === 1 ? () => setCurrentView('설정') : prevStep} className="p-2 rounded-full hover:bg-gray-100">
+            <button onClick={step === 1 ? () => setCurrentView('MY') : prevStep} className="p-2 rounded-full hover:bg-gray-100">
                 <ChevronLeftIcon className="w-6 h-6 text-gray-600" />
             </button>
             <div className="flex-grow mx-4 h-2 bg-gray-200 rounded-full">
                 <div className="h-2 bg-jazz-blue-900 rounded-full transition-all duration-300" style={{ width: `${(step / totalSteps) * 100}%` }}></div>
             </div>
-            <button onClick={() => setCurrentView('설정')} className="text-sm font-semibold text-gray-600 hover:text-gray-900">나가기</button>
+            <button onClick={() => setCurrentView('MY')} className="text-sm font-semibold text-gray-600 hover:text-gray-900">나가기</button>
         </div>
     );
     

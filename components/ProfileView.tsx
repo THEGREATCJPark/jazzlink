@@ -1,17 +1,16 @@
 
-
 import React, { useState, useEffect, useMemo } from 'react';
-import { db, USE_MOCK_DATA } from '../firebase/config.ts';
+import { db, USE_MOCK_DATA } from '../firebase/config';
 import { collection, getDocs, doc, getDoc, query, orderBy, runTransaction, Timestamp } from 'firebase/firestore';
-import { Musician, Team, Venue, User, Review } from '../types.ts';
-import InstagramIcon from './icons/InstagramIcon.tsx';
-import YoutubeIcon from './icons/YoutubeIcon.tsx';
-import MapPinIcon from './icons/GoogleMapsIcon.tsx';
-import PencilIcon from './icons/PencilIcon.tsx';
-import StarIcon from './icons/StarIcon.tsx';
-import { musicians as mockMusicians, teams as mockTeams, venues as mockVenues } from '../data/mockData.ts';
+import { Musician, Team, Venue, User, Review } from '../types';
+import InstagramIcon from './icons/InstagramIcon';
+import YoutubeIcon from './icons/YoutubeIcon';
+import MapPinIcon from './icons/GoogleMapsIcon';
+import PencilIcon from './icons/PencilIcon';
+import StarIcon from './icons/StarIcon';
+import { musicians as mockMusicians, teams as mockTeams, venues as mockVenues } from '../data/mockData';
 import { User as FirebaseUser } from 'firebase/auth';
-import PlusIcon from './icons/PlusIcon.tsx';
+import PlusIcon from './icons/PlusIcon';
 
 type NavigateToEditorFn = (profile: { type: 'musician' | 'venue' | 'team' | 'general', id: string }) => void;
 type ProfileTab = '재즈바' | '연주자' | '연주팀';
@@ -114,8 +113,6 @@ const VenueDetailModal: React.FC<{ venue: Venue; onClose: () => void; currentUse
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
     const [averageRating, setAverageRating] = useState((venue.ratingCount && venue.totalRating) ? (venue.totalRating / venue.ratingCount) : 0);
     const [ratingCount, setRatingCount] = useState(venue.ratingCount || 0);
-    const [hasAlreadyReviewed, setHasAlreadyReviewed] = useState(false);
-
 
     useEffect(() => {
         if (!db) return;
@@ -131,9 +128,6 @@ const VenueDetailModal: React.FC<{ venue: Venue; onClose: () => void; currentUse
                     return { id: doc.id, ...data } as Review;
                 });
                 setReviews(reviewsList);
-                if (currentUser) {
-                    setHasAlreadyReviewed(reviewsList.some(r => r.authorUid === currentUser.uid));
-                }
                 
                 const authorUids = [...new Set(reviewsList.filter(r => !r.isAnonymous).map(r => r.authorUid))];
                 if (authorUids.length > 0) {
@@ -152,7 +146,7 @@ const VenueDetailModal: React.FC<{ venue: Venue; onClose: () => void; currentUse
             setReviewsLoading(false);
         };
         fetchReviews();
-    }, [venue.id, currentUser]);
+    }, [venue.id]);
 
     const handleReviewSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -188,7 +182,6 @@ const VenueDetailModal: React.FC<{ venue: Venue; onClose: () => void; currentUse
             setNewReviewContent('');
             setNewReviewRating(0);
             setIsAnonymous(false);
-            setHasAlreadyReviewed(true);
             alert("후기가 등록되었습니다.");
         } catch (e) {
             console.error("Failed to submit review:", e);
@@ -234,11 +227,6 @@ const VenueDetailModal: React.FC<{ venue: Venue; onClose: () => void; currentUse
                 </div>
             )}
             {currentUser && (
-                hasAlreadyReviewed ? (
-                    <div className="bg-gray-100 dark:bg-jazz-blue-700 p-3 rounded-lg mb-4 text-center text-sm text-gray-600 dark:text-gray-300">
-                        이미 후기를 작성했습니다.
-                    </div>
-                ) : (
                 <form onSubmit={handleReviewSubmit} className="bg-gray-100 dark:bg-jazz-blue-700 p-3 rounded-lg mb-4">
                     <div className="flex items-center mb-2">{[1, 2, 3, 4, 5].map(star => <button type="button" key={star} onClick={() => setNewReviewRating(star)}><StarIcon className={`w-6 h-6 transition-colors ${newReviewRating >= star ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'}`} filled={newReviewRating >= star} /></button>)}</div>
                     <textarea value={newReviewContent} onChange={(e) => setNewReviewContent(e.target.value)} placeholder="이곳에 대한 후기를 남겨주세요." rows={2} className="w-full bg-white dark:bg-jazz-blue-800 border border-gray-300 dark:border-jazz-blue-600 rounded-md p-2 text-sm text-gray-700 dark:text-gray-200 mb-2" />
@@ -252,20 +240,19 @@ const VenueDetailModal: React.FC<{ venue: Venue; onClose: () => void; currentUse
                         <button type="submit" disabled={isSubmittingReview || !newReviewContent.trim() || newReviewRating === 0} className="bg-jazz-blue-900 text-white font-bold py-2 px-4 rounded-md text-sm disabled:bg-gray-400 dark:disabled:bg-jazz-blue-700">등록</button>
                     </div>
                 </form>
-                )
             )}
             <div className="space-y-4">
                 {reviewsLoading ? <p className="text-sm text-gray-400 dark:text-jazz-gray-500">후기 로딩 중...</p> : reviews.length > 0 ? reviews.map(review => {
                     const isReviewAnonymous = review.isAnonymous;
                     const author = isReviewAnonymous ? null : usersData.get(review.authorUid);
-                    const authorName = isReviewAnonymous ? '익명' : (author?.name || '익명');
+                    const authorName = isReviewAnonymous ? '익명' : author?.name || '익명';
                     const authorPhoto = isReviewAnonymous 
                         ? `https://ui-avatars.com/api/?name=?&background=656E7C&color=FFFFFF`
                         : author?.photo || `https://ui-avatars.com/api/?name=${author?.name || '?'}`;
 
                     return (<div key={review.id} className="border-t border-gray-100 dark:border-jazz-blue-700 pt-3">
                                 <div className="flex items-center mb-1">
-                                    <img src={authorPhoto} alt={String(authorName)} className="w-6 h-6 rounded-full mr-2" />
+                                    <img src={authorPhoto} alt={authorName} className="w-6 h-6 rounded-full mr-2" />
                                     <span className="font-bold text-sm text-gray-800 dark:text-gray-200">{authorName}</span>
                                     <div className="flex ml-auto">{[...Array(5)].map((_, i) => <StarIcon key={i} className="w-4 h-4 text-yellow-500" filled={i < review.rating} />)}</div>
                                 </div>
@@ -299,8 +286,6 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
     const [averageRating, setAverageRating] = useState((musician.ratingCount && musician.totalRating) ? (musician.totalRating / musician.ratingCount) : 0);
     const [ratingCount, setRatingCount] = useState(musician.ratingCount || 0);
-    const [hasAlreadyReviewed, setHasAlreadyReviewed] = useState(false);
-
 
     useEffect(() => {
         if (!db) return;
@@ -316,9 +301,6 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
                     return { id: doc.id, ...data } as Review;
                 });
                 setReviews(reviewsList);
-                if (currentUser) {
-                    setHasAlreadyReviewed(reviewsList.some(r => r.authorUid === currentUser.uid));
-                }
                 
                 const authorUids = [...new Set(reviewsList.filter(r => !r.isAnonymous).map(r => r.authorUid))];
                 if (authorUids.length > 0) {
@@ -337,7 +319,7 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
             setReviewsLoading(false);
         };
         fetchReviews();
-    }, [musician.id, currentUser]);
+    }, [musician.id]);
 
     const handleReviewSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -373,7 +355,6 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
             setNewReviewContent('');
             setNewReviewRating(0);
             setIsAnonymous(false);
-            setHasAlreadyReviewed(true);
             alert("후기가 등록되었습니다.");
         } catch (e) {
             console.error("Failed to submit review:", e);
@@ -421,11 +402,6 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
                         </div>
                     )}
                     {currentUser && (
-                         hasAlreadyReviewed ? (
-                            <div className="bg-gray-100 dark:bg-jazz-blue-700 p-3 rounded-lg mb-4 text-center text-sm text-gray-600 dark:text-gray-300">
-                                이미 후기를 작성했습니다.
-                            </div>
-                        ) : (
                         <form onSubmit={handleReviewSubmit} className="bg-gray-100 dark:bg-jazz-blue-700 p-3 rounded-lg mb-4">
                             <div className="flex items-center mb-2">{[1, 2, 3, 4, 5].map(star => <button type="button" key={star} onClick={() => setNewReviewRating(star)}><StarIcon className={`w-6 h-6 transition-colors ${newReviewRating >= star ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'}`} filled={newReviewRating >= star} /></button>)}</div>
                             <textarea value={newReviewContent} onChange={(e) => setNewReviewContent(e.target.value)} placeholder="연주 경험, 협업 태도 등 후기를 남겨주세요." rows={2} className="w-full bg-white dark:bg-jazz-blue-800 border border-gray-300 dark:border-jazz-blue-600 rounded-md p-2 text-sm text-gray-700 dark:text-gray-200 mb-2" />
@@ -439,19 +415,18 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
                                 <button type="submit" disabled={isSubmittingReview || !newReviewContent.trim() || newReviewRating === 0} className="bg-jazz-blue-900 text-white font-bold py-2 px-4 rounded-md text-sm disabled:bg-gray-400 dark:disabled:bg-jazz-blue-700">등록</button>
                             </div>
                         </form>
-                        )
                     )}
                      <div className="space-y-4">
                         {reviewsLoading ? <p className="text-sm text-gray-400 dark:text-jazz-gray-500">후기 로딩 중...</p> : reviews.length > 0 ? reviews.map(review => {
                              const isReviewAnonymous = review.isAnonymous;
                              const author = isReviewAnonymous ? null : usersData.get(review.authorUid);
-                             const authorName = isReviewAnonymous ? '익명' : (author?.name || '익명');
+                             const authorName = isReviewAnonymous ? '익명' : author?.name || '익명';
                              const authorPhoto = isReviewAnonymous 
                                  ? `https://ui-avatars.com/api/?name=?&background=656E7C&color=FFFFFF`
                                  : author?.photo || `https://ui-avatars.com/api/?name=${author?.name || '?'}`;
                             return (<div key={review.id} className="border-t border-gray-100 dark:border-jazz-blue-700 pt-3">
                                         <div className="flex items-center mb-1">
-                                            <img src={authorPhoto} alt={String(authorName)} className="w-6 h-6 rounded-full mr-2" />
+                                            <img src={authorPhoto} alt={authorName} className="w-6 h-6 rounded-full mr-2" />
                                             <span className="font-bold text-sm text-gray-800 dark:text-gray-200">{authorName}</span>
                                             <div className="flex ml-auto">{[...Array(5)].map((_, i) => <StarIcon key={i} className="w-4 h-4 text-yellow-500" filled={i < review.rating} />)}</div>
                                         </div>
@@ -479,8 +454,6 @@ const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelect
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
     const [averageRating, setAverageRating] = useState((team.ratingCount && team.totalRating) ? (team.totalRating / team.ratingCount) : 0);
     const [ratingCount, setRatingCount] = useState(team.ratingCount || 0);
-    const [hasAlreadyReviewed, setHasAlreadyReviewed] = useState(false);
-
 
     useEffect(() => {
         if (!db) return;
@@ -496,9 +469,6 @@ const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelect
                     return { id: doc.id, ...data } as Review;
                 });
                 setReviews(reviewsList);
-                if (currentUser) {
-                    setHasAlreadyReviewed(reviewsList.some(r => r.authorUid === currentUser.uid));
-                }
                 
                 const authorUids = [...new Set(reviewsList.filter(r => !r.isAnonymous).map(r => r.authorUid))];
                 if (authorUids.length > 0) {
@@ -517,7 +487,7 @@ const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelect
             setReviewsLoading(false);
         };
         fetchReviews();
-    }, [team.id, currentUser]);
+    }, [team.id]);
 
     const handleReviewSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -544,7 +514,6 @@ const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelect
             setNewReviewContent('');
             setNewReviewRating(0);
             setIsAnonymous(false);
-            setHasAlreadyReviewed(true);
             alert("후기가 등록되었습니다.");
         } catch (e) {
             console.error("Failed to submit review:", e);
@@ -599,11 +568,6 @@ const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelect
                         </div>
                     )}
                     {currentUser && (
-                        hasAlreadyReviewed ? (
-                            <div className="bg-gray-100 dark:bg-jazz-blue-700 p-3 rounded-lg mb-4 text-center text-sm text-gray-600 dark:text-gray-300">
-                                이미 후기를 작성했습니다.
-                            </div>
-                        ) : (
                         <form onSubmit={handleReviewSubmit} className="bg-gray-100 dark:bg-jazz-blue-700 p-3 rounded-lg mb-4">
                             <div className="flex items-center mb-2">{[1, 2, 3, 4, 5].map(star => <button type="button" key={star} onClick={() => setNewReviewRating(star)}><StarIcon className={`w-6 h-6 transition-colors ${newReviewRating >= star ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'}`} filled={newReviewRating >= star} /></button>)}</div>
                             <textarea value={newReviewContent} onChange={(e) => setNewReviewContent(e.target.value)} placeholder="팀에 대한 후기를 남겨주세요." rows={2} className="w-full bg-white dark:bg-jazz-blue-800 border border-gray-300 dark:border-jazz-blue-600 rounded-md p-2 text-sm text-gray-700 dark:text-gray-200 mb-2" />
@@ -617,19 +581,18 @@ const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelect
                                 <button type="submit" disabled={isSubmittingReview || !newReviewContent.trim() || newReviewRating === 0} className="bg-jazz-blue-900 text-white font-bold py-2 px-4 rounded-md text-sm disabled:bg-gray-400 dark:disabled:bg-jazz-blue-700">등록</button>
                             </div>
                         </form>
-                        )
                     )}
                      <div className="space-y-4">
                         {reviewsLoading ? <p className="text-sm text-gray-400 dark:text-jazz-gray-500">후기 로딩 중...</p> : reviews.length > 0 ? reviews.map(review => {
                             const isReviewAnonymous = review.isAnonymous;
                             const author = isReviewAnonymous ? null : usersData.get(review.authorUid);
-                            const authorName = isReviewAnonymous ? '익명' : (author?.name || '익명');
+                            const authorName = isReviewAnonymous ? '익명' : author?.name || '익명';
                             const authorPhoto = isReviewAnonymous 
                                 ? `https://ui-avatars.com/api/?name=?&background=656E7C&color=FFFFFF`
                                 : author?.photo || `https://ui-avatars.com/api/?name=${author?.name || '?'}`;
                             return (<div key={review.id} className="border-t border-gray-100 dark:border-jazz-blue-700 pt-3">
                                         <div className="flex items-center mb-1">
-                                            <img src={authorPhoto} alt={String(authorName)} className="w-6 h-6 rounded-full mr-2" />
+                                            <img src={authorPhoto} alt={authorName} className="w-6 h-6 rounded-full mr-2" />
                                             <span className="font-bold text-sm text-gray-800 dark:text-gray-200">{authorName}</span>
                                             <div className="flex ml-auto">{[...Array(5)].map((_, i) => <StarIcon key={i} className="w-4 h-4 text-yellow-500" filled={i < review.rating} />)}</div>
                                         </div>

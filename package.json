@@ -11,9 +11,9 @@
   "dependencies": {
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "fs": "^0.0.1-security",
-    "path": "^0.12.7",
     "firebase": "^12.5.0",
+    "path": "^0.12.7",
+    "fs": "^0.0.1-security",
     "firebase-admin": "^13.6.0",
     "url": "^0.11.4"
   },

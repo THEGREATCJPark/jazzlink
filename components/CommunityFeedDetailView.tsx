@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { db } from '../firebase/config.ts';
+import { db } from '../firebase/config';
 import { doc, getDoc, collection, query, orderBy, getDocs, addDoc, updateDoc, Timestamp, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { CommunityFeed, Comment, User as UserType } from '../types.ts';
+import { CommunityFeed, Comment, User as UserType } from '../types';
 import { User as FirebaseUser } from 'firebase/auth';
-import HeartIcon from './icons/HeartIcon.tsx';
+import HeartIcon from './icons/HeartIcon';
 
 interface CommunityFeedDetailViewProps {
     feedId: string;
@@ -146,76 +146,76 @@ const CommunityFeedDetailView: React.FC<CommunityFeedDetailViewProps> = ({ feedI
     const hasLiked = currentUser ? feedItem.likedBy.includes(currentUser.uid) : false;
 
     return (
-        <div className="animate-fade-in bg-white dark:bg-jazz-blue-800 min-h-full flex flex-col">
-            <div className="flex-grow p-4">
-                <div className="border-b border-gray-200 dark:border-jazz-blue-700 pb-4">
-                    <button onClick={() => onViewUserProfile(feedItem.authorUid)} className="flex items-center mb-4 text-left w-full rounded-md hover:bg-gray-100 dark:hover:bg-jazz-blue-700 p-1 -ml-1">
-                        <img src={feedItem.authorPhoto || `https://ui-avatars.com/api/?name=${feedItem.authorName}&background=1A263A&color=FFC700`} alt={feedItem.authorName || ''} className="w-10 h-10 rounded-full mr-3" />
-                        <div>
-                            <p className="font-bold text-gray-800 dark:text-gray-100">{feedItem.authorName || '익명'}</p>
-                            <p className="text-xs text-gray-500 dark:text-jazz-gray-400">{new Date(feedItem.dateTime).toLocaleString('ko-KR')}</p>
-                        </div>
+        <div className="animate-fade-in bg-white dark:bg-jazz-blue-800 min-h-screen">
+            <div className="p-4 border-b border-gray-200 dark:border-jazz-blue-700">
+                <button onClick={() => onViewUserProfile(feedItem.authorUid)} className="flex items-center mb-4 text-left w-full rounded-md hover:bg-gray-100 dark:hover:bg-jazz-blue-700 p-1 -ml-1">
+                    <img src={feedItem.authorPhoto || `https://ui-avatars.com/api/?name=${feedItem.authorName}&background=1A263A&color=FFC700`} alt={feedItem.authorName || ''} className="w-10 h-10 rounded-full mr-3" />
+                    <div>
+                        <p className="font-bold text-gray-800 dark:text-gray-100">{feedItem.authorName || '익명'}</p>
+                        <p className="text-xs text-gray-500 dark:text-jazz-gray-400">{new Date(feedItem.dateTime).toLocaleString('ko-KR')}</p>
+                    </div>
+                </button>
+                <span className={`text-xs font-bold px-2 py-1 rounded-full ${categoryStyle} mb-2 inline-block`}>{feedItem.category}</span>
+                <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">{feedItem.title}</h1>
+                <p className="text-gray-700 dark:text-jazz-gray-300 whitespace-pre-wrap">{feedItem.content}</p>
+                 {feedItem.images && feedItem.images.length > 0 && (
+                    <div className="mt-4 grid grid-cols-3 gap-2">
+                        {feedItem.images.map((img, index) => (
+                             <div key={index} className="w-full aspect-square rounded-md overflow-hidden border border-gray-200 dark:border-jazz-blue-700">
+                                <img src={img} alt={`Post image ${index + 1}`} className="w-full h-full object-cover" />
+                             </div>
+                        ))}
+                    </div>
+                )}
+                <div className="mt-6 flex items-center justify-end space-x-4">
+                    <button onClick={handleLike} className={`flex items-center space-x-1.5 transition-colors ${hasLiked ? 'text-rose-500' : 'text-gray-500 dark:text-jazz-gray-400 hover:text-rose-500'}`}>
+                        <HeartIcon className="w-5 h-5" filled={hasLiked} />
+                        <span className="font-semibold">{feedItem.likedBy.length}</span>
                     </button>
-                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${categoryStyle} mb-2 inline-block`}>{feedItem.category}</span>
-                    <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">{feedItem.title}</h1>
-                    <p className="text-gray-700 dark:text-jazz-gray-300 whitespace-pre-wrap">{feedItem.content}</p>
-                    {feedItem.images && feedItem.images.length > 0 && (
-                        <div className="mt-4 grid grid-cols-3 gap-2">
-                            {feedItem.images.map((img, index) => (
-                                <div key={index} className="w-full aspect-square rounded-md overflow-hidden border border-gray-200 dark:border-jazz-blue-700">
-                                    <img src={img} alt={`Post image ${index + 1}`} className="w-full h-full object-cover" />
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                    <div className="mt-6 flex items-center justify-end space-x-4">
-                        <button onClick={handleLike} className={`flex items-center space-x-1.5 transition-colors ${hasLiked ? 'text-rose-500' : 'text-gray-500 dark:text-jazz-gray-400 hover:text-rose-500'}`}>
-                            <HeartIcon className="w-5 h-5" filled={hasLiked} />
-                            <span className="font-semibold">{feedItem.likedBy.length}</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div className="pt-4">
-                    <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">댓글 {comments.length}</h2>
-                    <div className="space-y-4">
-                        {comments.map(comment => {
-                            const commentAuthor = usersData.get(comment.authorUid);
-                            return (
-                                <div key={comment.id} className="flex items-start">
-                                    <button onClick={() => onViewUserProfile(comment.authorUid)} className="flex-shrink-0 rounded-full hover:opacity-80">
-                                        <img src={commentAuthor?.photo || `https://ui-avatars.com/api/?name=${commentAuthor?.name}&background=1A263A&color=FFC700`} alt={commentAuthor?.name || ''} className="w-8 h-8 rounded-full" />
-                                    </button>
-                                    <div className="ml-3 bg-gray-100 dark:bg-jazz-blue-700 rounded-lg p-3 w-full">
-                                        <div className="flex items-baseline justify-between">
-                                            <span className="font-bold text-sm text-gray-800 dark:text-gray-200">{commentAuthor?.name || '익명'}</span>
-                                            <span className="text-xs text-gray-500 dark:text-jazz-gray-400">{new Date(comment.dateTime).toLocaleString('ko-KR', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute:'2-digit' })}</span>
-                                        </div>
-                                        <p className="text-sm text-gray-700 dark:text-jazz-gray-300 mt-1">{comment.content}</p>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
                 </div>
             </div>
 
-            <form onSubmit={handleCommentSubmit} className="flex-shrink-0 p-4 sticky bottom-0 bg-white dark:bg-jazz-blue-800 border-t border-gray-200 dark:border-jazz-blue-700 flex items-center space-x-2">
-                <input
-                    type="text"
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="댓글을 입력하세요..."
-                    className="w-full bg-gray-100 dark:bg-jazz-blue-700 border border-gray-300 dark:border-jazz-blue-600 rounded-full py-2 px-4 text-sm text-gray-800 dark:text-gray-200 focus:ring-jazz-blue-900 focus:border-jazz-blue-900"
-                />
-                <button
-                    type="submit"
-                    disabled={isSubmitting || !newComment.trim()}
-                    className="flex-shrink-0 bg-jazz-blue-900 text-white font-bold py-2 px-5 rounded-full text-sm disabled:bg-gray-400 dark:disabled:bg-jazz-blue-700"
-                >
-                    등록
-                </button>
-            </form>
+            <div className="p-4">
+                <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">댓글 {comments.length}</h2>
+                <div className="space-y-4">
+                    {comments.map(comment => {
+                        const commentAuthor = usersData.get(comment.authorUid);
+                        return (
+                            <div key={comment.id} className="flex items-start">
+                                <button onClick={() => onViewUserProfile(comment.authorUid)} className="flex-shrink-0 rounded-full hover:opacity-80">
+                                    <img src={commentAuthor?.photo || `https://ui-avatars.com/api/?name=${commentAuthor?.name}&background=1A263A&color=FFC700`} alt={commentAuthor?.name || ''} className="w-8 h-8 rounded-full" />
+                                </button>
+                                <div className="flex-1 bg-gray-100 dark:bg-jazz-blue-700 p-3 rounded-lg ml-3">
+                                    <div className="flex items-baseline space-x-2">
+                                        <button onClick={() => onViewUserProfile(comment.authorUid)} className="font-bold text-sm text-gray-800 dark:text-gray-200 hover:underline">{commentAuthor?.name || '익명'}</button>
+                                        <p className="text-xs text-gray-500 dark:text-jazz-gray-400">{new Date(comment.dateTime).toLocaleString('ko-KR')}</p>
+                                    </div>
+                                    <p className="text-sm text-gray-700 dark:text-jazz-gray-300 mt-1">{comment.content}</p>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+            
+            <div className="sticky bottom-20 sm:bottom-0 left-0 right-0 p-4 bg-white dark:bg-jazz-blue-800 border-t border-gray-200 dark:border-jazz-blue-700 max-w-md mx-auto">
+                {currentUser ? (
+                    <form onSubmit={handleCommentSubmit} className="flex items-center space-x-2">
+                        <input 
+                            type="text"
+                            value={newComment}
+                            onChange={e => setNewComment(e.target.value)}
+                            placeholder="댓글을 입력하세요..."
+                            className="w-full bg-gray-100 dark:bg-jazz-blue-700 border border-gray-300 dark:border-jazz-blue-600 rounded-full py-2 px-4 text-sm text-gray-700 dark:text-gray-200 focus:ring-jazz-blue-900 focus:border-jazz-blue-900"
+                        />
+                        <button type="submit" disabled={isSubmitting || !newComment.trim()} className="bg-jazz-blue-900 text-white font-bold py-2 px-4 rounded-full text-sm hover:bg-jazz-blue-800 disabled:bg-gray-400">
+                            {isSubmitting ? '...' : '등록'}
+                        </button>
+                    </form>
+                ) : (
+                    <p className="text-center text-sm text-gray-500 dark:text-jazz-gray-400">댓글을 작성하려면 로그인이 필요합니다.</p>
+                )}
+            </div>
         </div>
     );
 };

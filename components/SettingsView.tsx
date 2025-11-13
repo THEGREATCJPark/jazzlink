@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { auth, db, USE_MOCK_DATA } from '../firebase/config.ts';
+import { auth, db, USE_MOCK_DATA } from '../firebase/config';
 import { 
     GoogleAuthProvider, 
     signInWithRedirect, 
@@ -12,9 +11,8 @@ import {
     deleteUser
 } from 'firebase/auth';
 import { doc, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
-import GoogleIcon from './icons/GoogleIcon.tsx';
-import { User as UserType } from '../types.ts';
-import CheckCircleIcon from './icons/CheckCircleIcon.tsx';
+import GoogleIcon from './icons/GoogleIcon';
+import { User as UserType } from '../types';
 
 interface SettingsViewProps {
   currentUser: FirebaseUser | null;
@@ -35,10 +33,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [resetMessageSent, setResetMessageSent] = useState(false);
+  const [resetMessage, setResetMessage] = useState('');
   const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
-  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-  const [feedbackText, setFeedbackText] = useState('');
 
 
   useEffect(() => {
@@ -165,11 +161,11 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
     
     setIsProcessing(true);
     setAuthError(null);
-    setResetMessageSent(false);
+    setResetMessage('');
 
     try {
         await sendPasswordResetEmail(auth, email);
-        setResetMessageSent(true);
+        setResetMessage('비밀번호 재설정 이메일을 보냈습니다. 받은편지함을 확인해주세요.');
     } catch (error: any) {
         setAuthError({message: '이메일 발송에 실패했습니다. 이메일 주소를 확인해주세요.'});
     } finally {
@@ -177,16 +173,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
     }
   }
 
-  const handleFeedbackSubmit = () => {
-    if (!feedbackText.trim()) {
-        alert('피드백 내용을 입력해주세요.');
-        return;
-    }
-    const mailtoLink = `mailto:jazzlink1961@gmail.com?subject=${encodeURIComponent('Jazzlink 피드백')}&body=${encodeURIComponent(feedbackText)}`;
-    window.location.href = mailtoLink;
-    setFeedbackText('');
-    setShowFeedbackModal(false);
-  };
 
   const handleLogout = async () => {
     if (!auth) return;
@@ -295,9 +281,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
             <a href="https://realbook.site" target="_blank" rel="noopener noreferrer" className="block w-full bg-gray-100 dark:bg-jazz-blue-800 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-jazz-blue-700 transition-colors">
                 리얼북 확인하기
             </a>
-            <button onClick={() => setShowFeedbackModal(true)} className="w-full bg-gray-100 dark:bg-jazz-blue-800 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-jazz-blue-700 transition-colors">
-                피드백 남기기
-            </button>
             {deferredInstallPrompt && (
                 <button onClick={handleInstallClick} className="w-full bg-gray-100 dark:bg-jazz-blue-800 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-jazz-blue-700 transition-colors">
                     앱 설치하기
@@ -324,97 +307,60 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
         </>
       ) : (
         <div className="flex-grow flex flex-col justify-center">
-            {resetMessageSent ? (
-                 <div className="flex-grow flex flex-col justify-center items-center text-center animate-fade-in">
-                    <CheckCircleIcon className="w-16 h-16 text-green-500 mb-4" />
-                    <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">이메일 발송 완료</h2>
-                    <p className="text-gray-600 dark:text-jazz-gray-300 mt-2 max-w-xs">비밀번호 재설정 이메일을 보냈습니다. 받은편지함을 확인해주세요.</p>
-                    <button
-                        onClick={() => {
-                            setResetMessageSent(false);
-                            setAuthMode('login');
-                            setEmail('');
-                        }}
-                        className="mt-8 w-full max-w-xs bg-jazz-blue-900 text-white font-bold py-3 rounded-lg hover:bg-jazz-blue-800 transition-colors"
-                    >
-                        로그인 화면으로 돌아가기
-                    </button>
-                </div>
-            ) : (
-                <>
-                <h2 className="text-3xl font-bold text-center text-jazz-blue-900 dark:text-white mb-4">Jazzlink</h2>
-                <p className="text-center text-gray-500 dark:text-jazz-gray-400 mb-8">재즈 커뮤니티에 오신 것을 환영합니다</p>
-                
-                { authMode !== 'reset' && (
-                    <div className="flex bg-gray-100 dark:bg-jazz-blue-800 rounded-full p-1 mb-6">
-                        <button onClick={() => setAuthMode('login')} className={`w-1/2 py-2 text-sm font-bold rounded-full transition-colors ${authMode === 'login' ? 'bg-white dark:bg-jazz-blue-700 shadow text-jazz-blue-900 dark:text-white' : 'text-gray-600 dark:text-jazz-gray-300'}`}>로그인</button>
-                        <button onClick={() => setAuthMode('signup')} className={`w-1/2 py-2 text-sm font-bold rounded-full transition-colors ${authMode === 'signup' ? 'bg-white dark:bg-jazz-blue-700 shadow text-jazz-blue-900 dark:text-white' : 'text-gray-600 dark:text-jazz-gray-300'}`}>회원가입</button>
-                    </div>
-                )}
-
-                { authMode === 'reset' ? (
-                    <form onSubmit={handlePasswordReset} className="space-y-4">
-                        <p className="text-sm text-center text-gray-600 dark:text-jazz-gray-300">가입한 이메일을 입력하시면,<br/>비밀번호 재설정 링크를 보내드립니다.</p>
-                        <input type="email" placeholder="이메일" value={email} onChange={e => setEmail(e.target.value)} required className="w-full bg-gray-100 dark:bg-jazz-blue-800 border border-gray-300 dark:border-jazz-blue-700 rounded-md p-3 text-gray-800 dark:text-gray-200 focus:ring-jazz-blue-900 focus:border-jazz-blue-900" />
-                        <button type="submit" disabled={isProcessing} className="w-full bg-jazz-blue-900 text-white font-bold py-3 rounded-lg hover:bg-jazz-blue-800 transition-colors disabled:bg-gray-400">
-                            {isProcessing ? '처리 중...' : '재설정 이메일 받기'}
-                        </button>
-                        <button type="button" onClick={() => setAuthMode('login')} className="w-full text-center text-sm text-gray-500 dark:text-jazz-gray-400 hover:underline mt-2">로그인으로 돌아가기</button>
-                    </form>
-                ) : (
-                    <form onSubmit={handleEmailAuth} className="space-y-4">
-                    <input type="email" placeholder="이메일" value={email} onChange={e => setEmail(e.target.value)} required className="w-full bg-gray-100 dark:bg-jazz-blue-800 border border-gray-300 dark:border-jazz-blue-700 rounded-md p-3 text-gray-800 dark:text-gray-200 focus:ring-jazz-blue-900 focus:border-jazz-blue-900" />
-                    <input type="password" placeholder="비밀번호" value={password} onChange={e => setPassword(e.target.value)} required className="w-full bg-gray-100 dark:bg-jazz-blue-800 border border-gray-300 dark:border-jazz-blue-700 rounded-md p-3 text-gray-800 dark:text-gray-200 focus:ring-jazz-blue-900 focus:border-jazz-blue-900" />
-                    {authMode === 'signup' && (
-                        <input type="password" placeholder="비밀번호 확인" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className="w-full bg-gray-100 dark:bg-jazz-blue-800 border border-gray-300 dark:border-jazz-blue-700 rounded-md p-3 text-gray-800 dark:text-gray-200 focus:ring-jazz-blue-900 focus:border-jazz-blue-900" />
-                    )}
-                    <button type="submit" disabled={isProcessing} className="w-full bg-jazz-blue-900 text-white font-bold py-3 rounded-lg hover:bg-jazz-blue-800 transition-colors disabled:bg-gray-400">
-                        {isProcessing ? '처리 중...' : (authMode === 'login' ? '로그인' : '회원가입')}
-                    </button>
-                    {authMode === 'login' && <button type="button" onClick={() => setAuthMode('reset')} className="w-full text-right text-xs text-gray-500 dark:text-jazz-gray-400 hover:underline pr-1">비밀번호를 잊으셨나요?</button>}
-                    </form>
-                )}
-
-                {authError && (
-                    <div className="bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-500/50 text-rose-700 dark:text-rose-300 p-3 rounded-md mt-4 text-sm">
-                        <p>{authError.message}</p>
-                    </div>
-                )}
-                
-                <div className="relative flex py-5 items-center">
-                    <div className="flex-grow border-t border-gray-200 dark:border-jazz-blue-700"></div>
-                    <span className="flex-shrink mx-4 text-gray-400 dark:text-jazz-gray-500 text-sm">또는</span>
-                    <div className="flex-grow border-t border-gray-200 dark:border-jazz-blue-700"></div>
-                </div>
-
-                <button 
-                    onClick={handleGoogleSignIn}
-                    className="w-full bg-white dark:bg-jazz-blue-800 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-jazz-blue-700 transition-colors flex items-center justify-center space-x-2 border border-gray-300 dark:border-jazz-blue-700"
-                >
-                    <GoogleIcon className="w-6 h-6" />
-                    <span>Google 계정으로 계속하기</span>
-                </button>
-                </>
-            )}
-        </div>
-      )}
-      {showFeedbackModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 animate-fade-in">
-            <div className="bg-white dark:bg-jazz-blue-800 rounded-lg max-w-sm w-full mx-4 p-6">
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">피드백 남기기</h2>
-                <p className="text-sm text-gray-600 dark:text-jazz-gray-300 mb-4">Jazzlink 서비스 개선을 위한 소중한 의견을 보내주세요. 앱에 대한 아이디어나 불편한 점을 자유롭게 작성해주시면 큰 도움이 됩니다.</p>
-                <textarea
-                    value={feedbackText}
-                    onChange={(e) => setFeedbackText(e.target.value)}
-                    rows={6}
-                    placeholder="여기에 피드백을 입력하세요..."
-                    className="w-full bg-gray-100 dark:bg-jazz-blue-700 border border-gray-300 dark:border-jazz-blue-600 rounded-md p-3 text-gray-800 dark:text-gray-200 focus:ring-jazz-blue-900 focus:border-jazz-blue-900"
-                />
-                <div className="mt-4 flex justify-end space-x-2">
-                    <button onClick={() => setShowFeedbackModal(false)} className="px-4 py-2 rounded-md text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-jazz-blue-700 hover:bg-gray-300 dark:hover:bg-jazz-blue-600 font-semibold">취소</button>
-                    <button onClick={handleFeedbackSubmit} className="px-4 py-2 rounded-md bg-jazz-blue-900 dark:bg-jazz-gold-500 text-white dark:text-jazz-blue-900 font-bold">보내기</button>
-                </div>
+          <h2 className="text-3xl font-bold text-center text-jazz-blue-900 dark:text-white mb-4">Jazzlink</h2>
+          <p className="text-center text-gray-500 dark:text-jazz-gray-400 mb-8">재즈 커뮤니티에 오신 것을 환영합니다</p>
+          
+          { authMode !== 'reset' && (
+            <div className="flex bg-gray-100 dark:bg-jazz-blue-800 rounded-full p-1 mb-6">
+                <button onClick={() => setAuthMode('login')} className={`w-1/2 py-2 text-sm font-bold rounded-full transition-colors ${authMode === 'login' ? 'bg-white dark:bg-jazz-blue-700 shadow text-jazz-blue-900 dark:text-white' : 'text-gray-600 dark:text-jazz-gray-300'}`}>로그인</button>
+                <button onClick={() => setAuthMode('signup')} className={`w-1/2 py-2 text-sm font-bold rounded-full transition-colors ${authMode === 'signup' ? 'bg-white dark:bg-jazz-blue-700 shadow text-jazz-blue-900 dark:text-white' : 'text-gray-600 dark:text-jazz-gray-300'}`}>회원가입</button>
             </div>
+          )}
+
+          { authMode === 'reset' ? (
+            <form onSubmit={handlePasswordReset} className="space-y-4">
+                <p className="text-sm text-center text-gray-600 dark:text-jazz-gray-300">가입한 이메일을 입력하시면,<br/>비밀번호 재설정 링크를 보내드립니다.</p>
+                <input type="email" placeholder="이메일" value={email} onChange={e => setEmail(e.target.value)} required className="w-full bg-gray-100 dark:bg-jazz-blue-800 border border-gray-300 dark:border-jazz-blue-700 rounded-md p-3 text-gray-800 dark:text-gray-200 focus:ring-jazz-blue-900 focus:border-jazz-blue-900" />
+                <button type="submit" disabled={isProcessing} className="w-full bg-jazz-blue-900 text-white font-bold py-3 rounded-lg hover:bg-jazz-blue-800 transition-colors disabled:bg-gray-400">
+                    {isProcessing ? '처리 중...' : '재설정 이메일 받기'}
+                </button>
+                <button type="button" onClick={() => setAuthMode('login')} className="w-full text-center text-sm text-gray-500 dark:text-jazz-gray-400 hover:underline mt-2">로그인으로 돌아가기</button>
+            </form>
+          ) : (
+            <form onSubmit={handleEmailAuth} className="space-y-4">
+              <input type="email" placeholder="이메일" value={email} onChange={e => setEmail(e.target.value)} required className="w-full bg-gray-100 dark:bg-jazz-blue-800 border border-gray-300 dark:border-jazz-blue-700 rounded-md p-3 text-gray-800 dark:text-gray-200 focus:ring-jazz-blue-900 focus:border-jazz-blue-900" />
+              <input type="password" placeholder="비밀번호" value={password} onChange={e => setPassword(e.target.value)} required className="w-full bg-gray-100 dark:bg-jazz-blue-800 border border-gray-300 dark:border-jazz-blue-700 rounded-md p-3 text-gray-800 dark:text-gray-200 focus:ring-jazz-blue-900 focus:border-jazz-blue-900" />
+              {authMode === 'signup' && (
+                  <input type="password" placeholder="비밀번호 확인" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className="w-full bg-gray-100 dark:bg-jazz-blue-800 border border-gray-300 dark:border-jazz-blue-700 rounded-md p-3 text-gray-800 dark:text-gray-200 focus:ring-jazz-blue-900 focus:border-jazz-blue-900" />
+              )}
+              <button type="submit" disabled={isProcessing} className="w-full bg-jazz-blue-900 text-white font-bold py-3 rounded-lg hover:bg-jazz-blue-800 transition-colors disabled:bg-gray-400">
+                  {isProcessing ? '처리 중...' : (authMode === 'login' ? '로그인' : '회원가입')}
+              </button>
+              {authMode === 'login' && <button type="button" onClick={() => setAuthMode('reset')} className="w-full text-right text-xs text-gray-500 dark:text-jazz-gray-400 hover:underline pr-1">비밀번호를 잊으셨나요?</button>}
+            </form>
+          )}
+
+          {resetMessage && <p className="text-green-600 dark:text-green-400 text-sm mt-4 text-center">{resetMessage}</p>}
+
+          {authError && (
+              <div className="bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-500/50 text-rose-700 dark:text-rose-300 p-3 rounded-md mt-4 text-sm">
+                  <p>{authError.message}</p>
+              </div>
+          )}
+          
+          <div className="relative flex py-5 items-center">
+            <div className="flex-grow border-t border-gray-200 dark:border-jazz-blue-700"></div>
+            <span className="flex-shrink mx-4 text-gray-400 dark:text-jazz-gray-500 text-sm">또는</span>
+            <div className="flex-grow border-t border-gray-200 dark:border-jazz-blue-700"></div>
+          </div>
+
+          <button 
+            onClick={handleGoogleSignIn}
+            className="w-full bg-white dark:bg-jazz-blue-800 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-jazz-blue-700 transition-colors flex items-center justify-center space-x-2 border border-gray-300 dark:border-jazz-blue-700"
+          >
+            <GoogleIcon className="w-6 h-6" />
+            <span>Google 계정으로 계속하기</span>
+          </button>
         </div>
       )}
     </div>
