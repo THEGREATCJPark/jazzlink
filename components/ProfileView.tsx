@@ -662,8 +662,8 @@ const ProfileView: React.FC<ProfileViewProps> = ({ currentUser, navigateToEditor
     const fetchData = async () => {
       setLoading(true);
       if (USE_MOCK_DATA || !db) {
-        setMusicians(mockMusicians); // mockMusicians의 타입이 Musician[]과 일치하도록 mockData.ts를 수정해야 합니다.
-        setTeams(mockTeams);         // mockTeams의 타입이 Team[]과 일치하도록 mockData.ts를 수정해야 합니다.
+        setMusicians(mockMusicians as any[]);
+        setTeams(mockTeams as any[]);
         setVenues(mockVenues);
         setLoading(false);
         return;
@@ -680,8 +680,8 @@ const ProfileView: React.FC<ProfileViewProps> = ({ currentUser, navigateToEditor
       } catch (error) {
         console.error("Error fetching profiles:", error);
         console.warn("Falling back to mock data due to Firestore error.");
-        setMusicians(mockMusicians);
-        setTeams(mockTeams);
+        setMusicians(mockMusicians as any[]);
+        setTeams(mockTeams as any[]);
         setVenues(mockVenues);
       }
       setLoading(false);
