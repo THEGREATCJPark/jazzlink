@@ -1,13 +1,13 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { db, USE_MOCK_DATA } from '../firebase/config';
+import { db, USE_MOCK_DATA } from '../firebase/config.ts';
 import { collection, getDocs, query, orderBy, Timestamp } from 'firebase/firestore';
-import { CommunityFeed, User as UserType } from '../types';
-import EyeIcon from './icons/EyeIcon';
-import HeartIcon from './icons/HeartIcon';
-import { communityFeed as mockFeed } from '../data/mockData';
+import { CommunityFeed, User as UserType } from '../types.ts';
+import EyeIcon from './icons/EyeIcon.tsx';
+import HeartIcon from './icons/HeartIcon.tsx';
+import { communityFeed as mockFeed } from '../data/mockData.ts';
 import { User as FirebaseUser } from 'firebase/auth';
-import SearchIcon from './icons/SearchIcon';
+import SearchIcon from './icons/SearchIcon.tsx';
 
 const FeedItem: React.FC<{ item: CommunityFeed; onSelect: () => void; currentUser: FirebaseUser | null }> = ({ item, onSelect, currentUser }) => {
   const categoryStyle = item.category === '연주자 구함' ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300' : item.category === '연주 구함' ? 'bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300' : 'bg-gray-200 text-gray-800 dark:bg-jazz-blue-700 dark:text-jazz-gray-200';

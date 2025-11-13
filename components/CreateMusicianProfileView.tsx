@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { db, storage } from '../firebase/config';
+import { db, storage } from '../firebase/config.ts';
 import { collection, addDoc, query, where, getDocs, doc, updateDoc, arrayUnion, getDoc, writeBatch, arrayRemove } from 'firebase/firestore';
 import { User as FirebaseUser, updateProfile } from 'firebase/auth';
-import { ViewType, Team, Musician } from '../types';
-import CreateTeamModal from './CreateTeamModal';
+import { ViewType, Team, Musician } from '../types.ts';
+import CreateTeamModal from './CreateTeamModal.tsx';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import ChevronLeftIcon from './icons/ChevronLeftIcon';
+import ChevronLeftIcon from './icons/ChevronLeftIcon.tsx';
 
 interface MusicianProfileEditorProps {
     currentUser: FirebaseUser | null;

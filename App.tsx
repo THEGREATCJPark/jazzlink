@@ -1,25 +1,24 @@
-
 import React, { useState, useEffect } from 'react';
-import { ViewType, User as UserType } from './types';
-import BottomNav from './components/BottomNav';
-import HomeView from './components/HomeView';
-import ScheduleView from './components/ScheduleView';
-import ProfileView from './components/ProfileView';
-import SettingsView from './components/SettingsView';
-import PencilIcon from './components/icons/PencilIcon';
-import { auth, db } from './firebase/config';
+import { ViewType, User as UserType } from './types.ts';
+import BottomNav from './components/BottomNav.tsx';
+import HomeView from './components/HomeView.tsx';
+import ScheduleView from './components/ScheduleView.tsx';
+import ProfileView from './components/ProfileView.tsx';
+import SettingsView from './components/SettingsView.tsx';
+import PencilIcon from './components/icons/PencilIcon.tsx';
+import { auth, db } from './firebase/config.ts';
 import { onAuthStateChanged, User as FirebaseUser, getRedirectResult } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import AccountTypeSelectionModal from './components/AccountTypeSelectionModal';
-import CreateMusicianProfileView from './components/CreateMusicianProfileView';
-import EditProfileContainer from './components/EditProfileContainer';
-import ChevronLeftIcon from './components/icons/ChevronLeftIcon';
-import CommunityFeedDetailView from './components/CommunityFeedDetailView';
-import CreatePostView from './components/CreatePostView';
-import CreateVenueProfileView from './components/CreateVenueProfileView';
-import CreateTeamProfileView from './components/CreateTeamProfileView';
-import SearchIcon from './components/icons/SearchIcon';
-import PlusIcon from './components/icons/PlusIcon';
+import AccountTypeSelectionModal from './components/AccountTypeSelectionModal.tsx';
+import CreateMusicianProfileView from './components/CreateMusicianProfileView.tsx';
+import EditProfileContainer from './components/EditProfileContainer.tsx';
+import ChevronLeftIcon from './components/icons/ChevronLeftIcon.tsx';
+import CommunityFeedDetailView from './components/CommunityFeedDetailView.tsx';
+import CreatePostView from './components/CreatePostView.tsx';
+import CreateVenueProfileView from './components/CreateVenueProfileView.tsx';
+import CreateTeamProfileView from './components/CreateTeamProfileView.tsx';
+import SearchIcon from './components/icons/SearchIcon.tsx';
+import PlusIcon from './components/icons/PlusIcon.tsx';
 
 
 const App: React.FC = () => {

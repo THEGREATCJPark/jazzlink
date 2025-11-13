@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { db } from '../firebase/config';
+import { db } from '../firebase/config.ts';
 import { collection, addDoc } from 'firebase/firestore';
 import { User as FirebaseUser } from 'firebase/auth';
-import { Team } from '../types';
+import { Team } from '../types.ts';
 
 interface CreateTeamModalProps {
     onClose: () => void;

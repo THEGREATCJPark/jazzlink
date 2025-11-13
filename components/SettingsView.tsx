@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { auth, db, USE_MOCK_DATA } from '../firebase/config';
+import { auth, db, USE_MOCK_DATA } from '../firebase/config.ts';
 import { 
     GoogleAuthProvider, 
     signInWithRedirect, 
@@ -12,9 +12,9 @@ import {
     deleteUser
 } from 'firebase/auth';
 import { doc, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
-import GoogleIcon from './icons/GoogleIcon';
-import { User as UserType } from '../types';
-import CheckCircleIcon from './icons/CheckCircleIcon';
+import GoogleIcon from './icons/GoogleIcon.tsx';
+import { User as UserType } from '../types.ts';
+import CheckCircleIcon from './icons/CheckCircleIcon.tsx';
 
 interface SettingsViewProps {
   currentUser: FirebaseUser | null;

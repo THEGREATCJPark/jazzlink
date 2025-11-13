@@ -1,8 +1,8 @@
 import React from 'react';
 import { User as FirebaseUser } from 'firebase/auth';
-import { ViewType } from '../types';
-import { EditVenueProfileView, EditGeneralProfileView } from './EditProfileViews';
-import CreateMusicianProfileView from './CreateMusicianProfileView';
+import { ViewType } from '../types.ts';
+import { EditVenueProfileView, EditGeneralProfileView } from './EditProfileViews.tsx';
+import CreateMusicianProfileView from './CreateMusicianProfileView.tsx';
 
 interface EditProfileContainerProps {
     profile: { type: 'musician' | 'venue' | 'team' | 'general', id: string };

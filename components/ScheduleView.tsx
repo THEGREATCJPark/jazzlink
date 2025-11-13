@@ -1,8 +1,8 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { db, USE_MOCK_DATA } from '../firebase/config';
+import { db, USE_MOCK_DATA } from '../firebase/config.ts';
 import { collection, getDocs } from 'firebase/firestore';
-import { Performance, Venue } from '../types';
-import { performances as mockPerformances, venues as mockVenues } from '../data/mockData';
+import { Performance, Venue } from '../types.ts';
+import { performances as mockPerformances, venues as mockVenues } from '../data/mockData.ts';
 
 const CUTE_ANIMAL_EMOJIS = ['🐶', '🐱', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁'];
 const getRandomCuteAnimalEmoji = () => CUTE_ANIMAL_EMOJIS[Math.floor(Math.random() * CUTE_ANIMAL_EMOJIS.length)];

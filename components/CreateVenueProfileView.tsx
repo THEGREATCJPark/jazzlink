@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { db, storage } from '../firebase/config';
+import { db, storage } from '../firebase/config.ts';
 import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { User as FirebaseUser, updateProfile } from 'firebase/auth';
-import { ViewType, Venue } from '../types';
+import { ViewType, Venue } from '../types.ts';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import ChevronLeftIcon from './icons/ChevronLeftIcon';
-import PlusIcon from './icons/PlusIcon';
+import ChevronLeftIcon from './icons/ChevronLeftIcon.tsx';
+import PlusIcon from './icons/PlusIcon.tsx';
 
 interface CreateVenueProfileViewProps {
     currentUser: FirebaseUser | null;

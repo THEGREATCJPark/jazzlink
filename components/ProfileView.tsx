@@ -1,16 +1,16 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { db, USE_MOCK_DATA } from '../firebase/config';
+import { db, USE_MOCK_DATA } from '../firebase/config.ts';
 import { collection, getDocs, doc, getDoc, query, orderBy, runTransaction, Timestamp } from 'firebase/firestore';
-import { Musician, Team, Venue, User, Review } from '../types';
-import InstagramIcon from './icons/InstagramIcon';
-import YoutubeIcon from './icons/YoutubeIcon';
-import MapPinIcon from './icons/GoogleMapsIcon';
-import PencilIcon from './icons/PencilIcon';
-import StarIcon from './icons/StarIcon';
-import { musicians as mockMusicians, teams as mockTeams, venues as mockVenues } from '../data/mockData';
+import { Musician, Team, Venue, User, Review } from '../types.ts';
+import InstagramIcon from './icons/InstagramIcon.tsx';
+import YoutubeIcon from './icons/YoutubeIcon.tsx';
+import MapPinIcon from './icons/GoogleMapsIcon.tsx';
+import PencilIcon from './icons/PencilIcon.tsx';
+import StarIcon from './icons/StarIcon.tsx';
+import { musicians as mockMusicians, teams as mockTeams, venues as mockVenues } from '../data/mockData.ts';
 import { User as FirebaseUser } from 'firebase/auth';
-import PlusIcon from './icons/PlusIcon';
+import PlusIcon from './icons/PlusIcon.tsx';
 
 type NavigateToEditorFn = (profile: { type: 'musician' | 'venue' | 'team' | 'general', id: string }) => void;
 type ProfileTab = '재즈바' | '연주자' | '연주팀';

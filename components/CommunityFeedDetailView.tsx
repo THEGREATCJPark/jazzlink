@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { db } from '../firebase/config';
+import { db } from '../firebase/config.ts';
 import { doc, getDoc, collection, query, orderBy, getDocs, addDoc, updateDoc, Timestamp, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { CommunityFeed, Comment, User as UserType } from '../types';
+import { CommunityFeed, Comment, User as UserType } from '../types.ts';
 import { User as FirebaseUser } from 'firebase/auth';
-import HeartIcon from './icons/HeartIcon';
+import HeartIcon from './icons/HeartIcon.tsx';
 
 interface CommunityFeedDetailViewProps {
     feedId: string;

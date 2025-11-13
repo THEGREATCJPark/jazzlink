@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { db } from '../firebase/config';
+import { db } from '../firebase/config.ts';
 import { doc, updateDoc } from 'firebase/firestore';
 import { User as FirebaseUser } from 'firebase/auth';
-import { User } from '../types';
+import { User } from '../types.ts';
 
 interface AccountTypeSelectionModalProps {
   user: FirebaseUser;

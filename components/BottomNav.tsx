@@ -1,9 +1,9 @@
 import React from 'react';
-import { ViewType } from '../types';
-import HomeIcon from './icons/HomeIcon';
-import UserIcon from './icons/UserIcon';
-import CogIcon from './icons/CogIcon';
-import CalendarIcon from './icons/CalendarIcon';
+import { ViewType } from '../types.ts';
+import HomeIcon from './icons/HomeIcon.tsx';
+import UserIcon from './icons/UserIcon.tsx';
+import CogIcon from './icons/CogIcon.tsx';
+import CalendarIcon from './icons/CalendarIcon.tsx';
 
 interface BottomNavProps {
   currentView: ViewType;

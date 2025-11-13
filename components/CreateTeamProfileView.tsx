@@ -1,12 +1,12 @@
 
 import React, { useState, useRef } from 'react';
-import { db, storage } from '../firebase/config';
+import { db, storage } from '../firebase/config.ts';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { User as FirebaseUser } from 'firebase/auth';
-import { ViewType, Team } from '../types';
-import ChevronLeftIcon from './icons/ChevronLeftIcon';
-import PlusIcon from './icons/PlusIcon';
+import { ViewType, Team } from '../types.ts';
+import ChevronLeftIcon from './icons/ChevronLeftIcon.tsx';
+import PlusIcon from './icons/PlusIcon.tsx';
 
 interface CreateTeamProfileViewProps {
     currentUser: FirebaseUser | null;
