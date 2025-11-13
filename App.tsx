@@ -118,10 +118,18 @@ const App: React.FC = () => {
       setAuthLoading(false);
       return;
     }
-    
-    getRedirectResult(auth).catch((error) => console.error("Google redirect error", error));
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const setupAuth = async () => {
+      try {
+        // This resolves the redirect promise and updates the auth state internally.
+        // After this, onAuthStateChanged will fire with the correct user.
+        await getRedirectResult(auth);
+      } catch (error) {
+        console.error("Google redirect result error:", error);
+      }
+      
+      // Now, set up the single source of truth for auth state.
+      const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (user) {
             setCurrentUser(user);
             await processUser(user);
@@ -131,9 +139,18 @@ const App: React.FC = () => {
             setShowAccountTypeSelection(false);
         }
         setAuthLoading(false);
-    });
+      });
 
-    return () => unsubscribe();
+      return unsubscribe;
+    };
+
+    const unsubscribePromise = setupAuth();
+
+    return () => {
+      unsubscribePromise.then(unsubscribe => {
+        if (unsubscribe) unsubscribe();
+      });
+    };
   }, []);
   
   const navigateToEditor = (profile: { type: 'musician' | 'venue' | 'team' | 'general', id: string }) => {
@@ -289,7 +306,7 @@ const App: React.FC = () => {
   const needsBackButton = !!selectedFeedId || isCreatingPost || ['프로필 수정', '프로필 생성', '프로필 생성 (재즈바)', '프로필 생성 (연주팀)'].includes(currentView);
 
   return (
-    <div className="relative max-w-md mx-auto bg-gray-50 dark:bg-jazz-blue-900 text-gray-800 dark:text-gray-200 h-screen font-sans flex flex-col overflow-hidden">
+    <div className="relative max-w-md mx-auto bg-gray-50 dark:bg-jazz-blue-900 text-gray-800 dark:text-gray-200 h-full font-sans flex flex-col">
       <header className="sticky top-0 bg-white/80 dark:bg-jazz-blue-900/80 backdrop-blur-sm z-20 p-4 border-b border-gray-200 dark:border-jazz-blue-700 flex items-center h-16 flex-shrink-0">
            {currentView === '홈' && !selectedFeedId ? (
              <>

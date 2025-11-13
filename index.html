@@ -6,6 +6,11 @@
   <title>Jazzlink</title>
   <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    html, body {
+        overscroll-behavior-y: contain;
+        overflow: hidden;
+        height: 100%;
+    }
   </style>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -40,6 +45,7 @@
       }
     }
   </script>
+<script src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
 <script type="importmap">
 {
   "imports": {
@@ -60,8 +66,8 @@
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-<body class="bg-gray-50 dark:bg-jazz-blue-900">
-  <div id="root"></div>
+<body class="bg-gray-50 dark:bg-jazz-blue-900 h-full">
+  <div id="root" class="h-full"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
 </html>
