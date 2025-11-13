@@ -1,9 +1,17 @@
-const CACHE_NAME = 'jazzlink-cache-v9';
+const CACHE_NAME = 'jazzlink-cache-v10';
 const urlsToCache = [
   '/',
   '/index.html',
+  '/manifest.json',
   '/index.tsx',
-  '/manifest.json'
+  '/App.tsx',
+  '/types.ts',
+  '/firebase/config.ts',
+  '/components/HomeView.tsx',
+  '/components/ScheduleView.tsx',
+  '/components/ProfileView.tsx',
+  '/components/SettingsView.tsx',
+  '/components/BottomNav.tsx'
 ];
 
 self.addEventListener('install', event => {
@@ -14,7 +22,10 @@ self.addEventListener('install', event => {
         console.log('Opened cache');
         // Use addAll with a new Request object with cache: 'reload' to bypass HTTP cache
         const requests = urlsToCache.map(url => new Request(url, { cache: 'reload' }));
-        return cache.addAll(requests);
+        return cache.addAll(requests).catch(error => {
+          console.error('Failed to cache all urls:', error);
+          // Even if some files fail, the service worker should still install.
+        });
       })
   );
   self.skipWaiting();
