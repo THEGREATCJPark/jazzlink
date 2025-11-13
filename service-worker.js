@@ -1,8 +1,9 @@
-const CACHE_NAME = 'jazzlink-cache-v5';
+const CACHE_NAME = 'jazzlink-cache-v6';
 const urlsToCache = [
   '/',
   '/index.html',
   '/index.tsx',
+  '/manifest.json'
 ];
 
 self.addEventListener('install', event => {
@@ -11,12 +12,23 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('Opened cache');
-        return cache.addAll(urlsToCache);
+        // Use addAll with a new Request object with cache: 'reload' to bypass HTTP cache
+        const requests = urlsToCache.map(url => new Request(url, { cache: 'reload' }));
+        return cache.addAll(requests);
       })
   );
+  self.skipWaiting();
 });
 
 self.addEventListener('fetch', event => {
+  // For navigation requests, always go to the network first.
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match('/index.html'))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(response => {
@@ -30,8 +42,13 @@ self.addEventListener('fetch', event => {
         return fetch(fetchRequest).then(
           response => {
             // Check if we received a valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
+            if (!response || response.status !== 200) {
               return response;
+            }
+
+            // We don't cache opaque responses (e.g. from no-cors requests)
+            if(response.type !== 'basic' && response.type !== 'default') {
+                return response;
             }
 
             const responseToCache = response.clone();
@@ -55,10 +72,11 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
+            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
