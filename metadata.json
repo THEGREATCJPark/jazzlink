@@ -1,5 +1,5 @@
 {
-  "name": "Jazzlink2",
+  "name": "Jazzlink",
   "description": "A non-profit PWA for the Korean jazz scene, connecting musicians and venues. Built as a mobile-first Single-Page Application.",
   "requestFramePermissions": []
 }

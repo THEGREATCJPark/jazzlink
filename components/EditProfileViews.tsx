@@ -1,19 +1,21 @@
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import { db, storage } from '../firebase/config';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { updateProfile, User } from 'firebase/auth';
+import { doc, getDoc, updateDoc, collection, getDocs, writeBatch, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { User as FirebaseUser, updateProfile } from 'firebase/auth';
+import { ViewType, Musician, Venue, User as UserType, Team } from '../types';
+import CreateTeamModal from './CreateTeamModal';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
+
 interface EditViewProps {
-    currentUser: User | null;
-    setCurrentView: (view: string) => void;
+    currentUser: FirebaseUser | null;
+    setCurrentView: (view: ViewType) => void;
 }
 
-interface EditGeneralProfileViewProps extends EditViewProps {
-    userId: string;
-}
-
-export const EditGeneralProfileView: React.FC<EditGeneralProfileViewProps> = ({ userId, currentUser, setCurrentView }) => {
+// General User Profile Editor
+export const EditGeneralProfileView: React.FC<EditViewProps & { userId: string }> = ({ userId, currentUser, setCurrentView }) => {
     const [name, setName] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
@@ -118,19 +120,17 @@ export const EditGeneralProfileView: React.FC<EditGeneralProfileViewProps> = ({ 
     );
 };
 
-interface EditVenueProfileViewProps extends EditViewProps {
-    profileId: string;
-}
 
-export const EditVenueProfileView: React.FC<EditVenueProfileViewProps> = ({ profileId, setCurrentView, currentUser }) => {
-    const [formData, setFormData] = useState({ name: '', address: '', description: '', tagsVenue: [] as string[], naverMapsUrl: '' });
+// Venue Profile Editor
+export const EditVenueProfileView: React.FC<EditViewProps & { profileId: string }> = ({ profileId, setCurrentView, currentUser }) => {
+    const [formData, setFormData] = useState<Partial<Venue>>({ name: '', address: '', description: '', tagsVenue: [], naverMapsUrl: '' });
     const [instagramId, setInstagramId] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
 
-    const [imageFiles, setImageFiles] = useState<(File|null)[]>([null, null, null]);
-    const [imagePreviews, setImagePreviews] = useState<(string|null)[]>([null, null, null]);
+    const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null, null]);
+    const [imagePreviews, setImagePreviews] = useState<(string | null)[]>([null, null, null]);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
 
@@ -141,8 +141,8 @@ export const EditVenueProfileView: React.FC<EditVenueProfileViewProps> = ({ prof
             const docRef = doc(db, 'venues', profileId);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
-                const data = docSnap.data();
-                setFormData(data as any);
+                const data = docSnap.data() as Venue;
+                setFormData(data);
                 if (data.instagramUrl) {
                     setInstagramId(data.instagramUrl.split('/').pop() || '');
                 }
@@ -211,7 +211,7 @@ export const EditVenueProfileView: React.FC<EditVenueProfileViewProps> = ({ prof
             const finalPhotos = photoURLs.filter((url): url is string => !!url);
             
             const docRef = doc(db, 'venues', profileId);
-            const updatedData = {
+            const updatedData: Partial<Venue> = {
                 ...formData,
                 photos: finalPhotos,
                 instagramUrl: instagramId ? `https://instagram.com/${instagramId.replace('@', '')}` : '',

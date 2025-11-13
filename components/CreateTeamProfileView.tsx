@@ -1,14 +1,16 @@
+
 import React, { useState, useRef } from 'react';
 import { db, storage } from '../firebase/config';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { User as FirebaseUser } from 'firebase/auth';
+import { ViewType, Team } from '../types';
 import ChevronLeftIcon from './icons/ChevronLeftIcon';
 import PlusIcon from './icons/PlusIcon';
-import { User } from 'firebase/auth';
 
 interface CreateTeamProfileViewProps {
-    currentUser: User | null;
-    setCurrentView: (view: string) => void;
+    currentUser: FirebaseUser | null;
+    setCurrentView: (view: ViewType) => void;
 }
 
 const availableTags = [
@@ -17,19 +19,12 @@ const availableTags = [
     '보컬 재즈', '클럽 연주팀', '이벤트/행사', '녹음 세션', '잼세션 호스트'
 ];
 
-interface TagSelectorProps {
-    availableTags: string[];
-    selectedTags: string[];
-    onTagToggle: (tag: string) => void;
-    title: string;
-}
-
-const TagSelector: React.FC<TagSelectorProps> = ({
-    availableTags,
-    selectedTags,
-    onTagToggle,
-    title
-}) => (
+const TagSelector: React.FC<{
+    availableTags: string[],
+    selectedTags: string[],
+    onTagToggle: (tag: string) => void,
+    title: string
+}> = ({ availableTags, selectedTags, onTagToggle, title }) => (
     <div>
         <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-3">{title}</h2>
         <div className="flex flex-wrap gap-2">
@@ -56,13 +51,13 @@ const TagSelector: React.FC<TagSelectorProps> = ({
 
 
 const CreateTeamProfileView: React.FC<CreateTeamProfileViewProps> = ({ currentUser, setCurrentView }) => {
-    const [teamData, setTeamData] = useState({
+    const [teamData, setTeamData] = useState<Partial<Team>>({
         teamName: '',
         teamDescription: '',
         region: '',
         youtubeUrl: '',
         instagramUrl: '',
-        tagsTeam: [] as string[],
+        tagsTeam: [],
     });
     
     const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null, null]);
@@ -72,7 +67,7 @@ const CreateTeamProfileView: React.FC<CreateTeamProfileViewProps> = ({ currentUs
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     
-    const setFormValue = (key: string, value: any) => {
+    const setFormValue = <K extends keyof Team>(key: K, value: Team[K]) => {
       setTeamData(prev => ({...prev, [key]: value}));
     };
     

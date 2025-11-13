@@ -1,20 +1,21 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { db } from '../firebase/config';
 import { doc, getDoc, collection, query, orderBy, getDocs, addDoc, updateDoc, Timestamp, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { CommunityFeed, Comment, User as UserType } from '../types';
+import { User as FirebaseUser } from 'firebase/auth';
 import HeartIcon from './icons/HeartIcon';
-import { FeedItem, Comment, UserProfile } from '../types';
-import { User } from 'firebase/auth';
 
 interface CommunityFeedDetailViewProps {
     feedId: string;
-    currentUser: User | null;
+    currentUser: FirebaseUser | null;
     onViewUserProfile: (uid: string) => void;
 }
 
 const CommunityFeedDetailView: React.FC<CommunityFeedDetailViewProps> = ({ feedId, currentUser, onViewUserProfile }) => {
-    const [feedItem, setFeedItem] = useState<FeedItem | null>(null);
+    const [feedItem, setFeedItem] = useState<CommunityFeed | null>(null);
     const [comments, setComments] = useState<Comment[]>([]);
-    const [usersData, setUsersData] = useState<Map<string, UserProfile>>(new Map());
+    const [usersData, setUsersData] = useState<Map<string, UserType>>(new Map());
     const [newComment, setNewComment] = useState('');
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,10 +39,7 @@ const CommunityFeedDetailView: React.FC<CommunityFeedDetailViewProps> = ({ feedI
             if (!feedDataRaw.viewedBy) {
                 feedDataRaw.viewedBy = [];
             }
-            if (!feedDataRaw.likedBy) {
-                feedDataRaw.likedBy = [];
-            }
-            const feedData = { id: feedSnap.id, ...feedDataRaw } as FeedItem;
+            const feedData = { id: feedSnap.id, ...feedDataRaw } as CommunityFeed;
             setFeedItem(feedData);
 
             const commentsRef = collection(db, 'communityFeed', feedId, 'comments');
@@ -66,7 +64,7 @@ const CommunityFeedDetailView: React.FC<CommunityFeedDetailViewProps> = ({ feedI
                  const userDocs = await Promise.all(userPromises);
                  userDocs.forEach(userDoc => {
                     if (userDoc.exists()) {
-                        newUsersData.set(userDoc.id, { uid: userDoc.id, ...userDoc.data() } as UserProfile);
+                        newUsersData.set(userDoc.id, { uid: userDoc.id, ...userDoc.data() } as UserType);
                     }
                  });
                 setUsersData(newUsersData);
@@ -81,7 +79,7 @@ const CommunityFeedDetailView: React.FC<CommunityFeedDetailViewProps> = ({ feedI
 
     useEffect(() => {
         const recordViewAndFetchData = async () => {
-            if (db && currentUser && feedId) {
+            if (db && currentUser) {
                 const feedRef = doc(db, 'communityFeed', feedId);
                 try {
                     await updateDoc(feedRef, {

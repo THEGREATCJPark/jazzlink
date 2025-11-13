@@ -1,5 +1,9 @@
+
 import React from 'react';
-import { IconProps } from '../../types';
+
+interface IconProps {
+  className?: string;
+}
 
 const MusicNoteIcon: React.FC<IconProps> = ({ className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">

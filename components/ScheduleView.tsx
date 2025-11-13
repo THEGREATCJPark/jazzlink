@@ -1,18 +1,13 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { db, USE_MOCK_DATA } from '../firebase/config';
 import { collection, getDocs } from 'firebase/firestore';
-import { performances as mockPerformancesData, venues as mockVenuesData } from '../data/mockData';
-import { Performance, VenueProfile } from '../types';
-import { Timestamp } from 'firebase/firestore';
+import { Performance, Venue } from '../types';
+import { performances as mockPerformances, venues as mockVenues } from '../data/mockData';
 
 const CUTE_ANIMAL_EMOJIS = ['🐶', '🐱', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁'];
 const getRandomCuteAnimalEmoji = () => CUTE_ANIMAL_EMOJIS[Math.floor(Math.random() * CUTE_ANIMAL_EMOJIS.length)];
 
-interface VenueAvatarProps {
-  venue: VenueProfile;
-}
-
-const VenueAvatar: React.FC<VenueAvatarProps> = ({ venue }) => {
+const VenueAvatar: React.FC<{ venue: Venue }> = ({ venue }) => {
     const photoUrl = useMemo(() => {
         if (Array.isArray(venue.photos) && venue.photos.length > 0 && venue.photos[0]) {
             return venue.photos[0];
@@ -36,7 +31,7 @@ const VenueAvatar: React.FC<VenueAvatarProps> = ({ venue }) => {
 const ScheduleView: React.FC = () => {
     
   const [performances, setPerformances] = useState<Performance[]>([]);
-  const [venues, setVenues] = useState<VenueProfile[]>([]);
+  const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVenueId, setSelectedVenueId] = useState<string | null>(null);
 
@@ -44,8 +39,8 @@ const ScheduleView: React.FC = () => {
     const fetchData = async () => {
         setLoading(true);
         if (USE_MOCK_DATA || !db) {
-            setPerformances(mockPerformancesData);
-            setVenues(mockVenuesData);
+            setPerformances(mockPerformances);
+            setVenues(mockVenues);
             setLoading(false);
             return;
         }
@@ -55,21 +50,20 @@ const ScheduleView: React.FC = () => {
             
             const performanceList = performancesSnapshot.docs.map(doc => {
                 const data = doc.data();
-                let dateTime = data.dateTime;
-                if (dateTime instanceof Timestamp) {
-                    dateTime = dateTime.toDate().toISOString();
+                if (data.dateTime?.toDate) {
+                    data.dateTime = data.dateTime.toDate().toISOString();
                 }
-                return { id: doc.id, ...data, dateTime } as Performance;
+                return { id: doc.id, ...data } as Performance;
             });
 
             setPerformances(performanceList);
-            setVenues(venuesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as VenueProfile)));
+            setVenues(venuesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Venue)));
 
         } catch (error) {
             console.error("Error fetching schedule data: ", error);
             console.warn("Falling back to mock data due to Firestore error.");
-            setPerformances(mockPerformancesData);
-            setVenues(mockVenuesData);
+            setPerformances(mockPerformances);
+            setVenues(mockVenues);
         }
         setLoading(false);
     };

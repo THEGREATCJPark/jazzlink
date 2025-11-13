@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
 import { db } from '../firebase/config';
 import { doc, updateDoc } from 'firebase/firestore';
-import { User } from 'firebase/auth';
-import { AccountType } from '../types';
+import { User as FirebaseUser } from 'firebase/auth';
+import { User } from '../types';
 
 interface AccountTypeSelectionModalProps {
-  user: User;
+  user: FirebaseUser;
   onSelected: () => void;
 }
 
-const accountTypes: { type: AccountType, label: string, description: string }[] = [
+const accountTypes: { type: User['accountType']; label: string; description: string }[] = [
   { type: 'musician', label: '연주자', description: '개인 프로필을 만들고 구인/구직 활동을 합니다.' },
   { type: 'venue_owner', label: '재즈바 사장님', description: '재즈바 정보를 등록하고 연주자를 구합니다.' },
   { type: 'general', label: '일반 회원', description: '커뮤니티 활동 및 공연 정보 확인이 주목적입니다.' },
 ];
 
 const AccountTypeSelectionModal: React.FC<AccountTypeSelectionModalProps> = ({ user, onSelected }) => {
-  const [isSubmitting, setIsSubmitting] = useState<AccountType | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<User['accountType'] | null>(null);
   const [error, setError] = useState('');
 
-  const handleSelect = async (type: AccountType) => {
+  const handleSelect = async (type: User['accountType']) => {
     if (!db || isSubmitting) return;
     setIsSubmitting(type);
     setError('');

@@ -1,19 +1,20 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { db, storage } from '../firebase/config';
 import { collection, addDoc, query, where, getDocs, doc, updateDoc, arrayUnion, getDoc, writeBatch, arrayRemove } from 'firebase/firestore';
-import { updateProfile, User } from 'firebase/auth';
+import { User as FirebaseUser, updateProfile } from 'firebase/auth';
+import { ViewType, Team, Musician } from '../types';
 import CreateTeamModal from './CreateTeamModal';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import ChevronLeftIcon from './icons/ChevronLeftIcon';
-import { TeamProfile } from '../types';
 
-interface CreateMusicianProfileViewProps {
-  currentUser: User | null;
-  setCurrentView: (view: string) => void;
-  profileId?: string;
+interface MusicianProfileEditorProps {
+    currentUser: FirebaseUser | null;
+    setCurrentView: (view: ViewType) => void;
+    profileId?: string;
 }
 
-const skillLevels: Record<string, string> = {
+const skillLevels = {
     '초보': '연습한 곡 위주로 합주 가능',
     '중급': '대부분의 스탠다드 연주 가능',
     '프로': '공연 리딩 및 즉흥 연주 가능'
@@ -33,19 +34,12 @@ const availableTags = [
     '라틴', '발라드', '비밥', '하드밥', '스윙'
 ];
 
-interface TagSelectorProps {
-    availableTags: string[];
-    selectedTags: string[];
-    onTagToggle: (tag: string) => void;
-    title: string;
-}
-
-const TagSelector: React.FC<TagSelectorProps> = ({
-    availableTags,
-    selectedTags,
-    onTagToggle,
-    title
-}) => (
+const TagSelector: React.FC<{
+    availableTags: string[],
+    selectedTags: string[],
+    onTagToggle: (tag: string) => void,
+    title: string
+}> = ({ availableTags, selectedTags, onTagToggle, title }) => (
     <div>
         <h2 className="text-2xl font-bold text-gray-800 mb-2">{title}</h2>
         <div className="flex flex-wrap gap-2">
@@ -70,28 +64,31 @@ const TagSelector: React.FC<TagSelectorProps> = ({
     </div>
 );
 
-const CreateMusicianProfileView: React.FC<CreateMusicianProfileViewProps> = ({ currentUser, setCurrentView, profileId }) => {
+const CreateMusicianProfileView: React.FC<MusicianProfileEditorProps> = ({ currentUser, setCurrentView, profileId }) => {
     const isEditMode = !!profileId;
     
+    // Wizard State
     const [step, setStep] = useState(1);
     const totalSteps = 6;
 
-    const [formData, setFormData] = useState({
+    // Form state
+    const [formData, setFormData] = useState<Partial<Musician>>({
       name: '',
-      instruments: [] as string[],
-      tagsMusician: [] as string[],
+      instruments: [],
+      tagsMusician: [],
       startYear: new Date().getFullYear(),
       skillLevel: '중급',
       profile: '',
       youtubeUrl: '',
       instagramUrl: '',
       teamId: '',
-      photos: [] as string[],
+      photos: [],
     });
     const [instagramId, setInstagramId] = useState('');
     const [originalTeamId, setOriginalTeamId] = useState<string | undefined>(undefined);
     
-    const [teams, setTeams] = useState<TeamProfile[]>([]);
+    // Control state
+    const [teams, setTeams] = useState<Team[]>([]);
     const [loading, setLoading] = useState(isEditMode);
     const [loadingTeams, setLoadingTeams] = useState(true);
     const [showTeamCreateModal, setShowTeamCreateModal] = useState(false);
@@ -99,11 +96,12 @@ const CreateMusicianProfileView: React.FC<CreateMusicianProfileViewProps> = ({ c
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState('');
     
+    // Image upload state
     const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null, null]);
     const [imagePreviews, setImagePreviews] = useState<(string | null)[]>([null, null, null]);
     const fileInputRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
 
-    const setFormValue = (key: string, value: any) => {
+    const setFormValue = <K extends keyof Musician>(key: K, value: Musician[K]) => {
       setFormData(prev => ({...prev, [key]: value}));
     };
 
@@ -115,12 +113,13 @@ const CreateMusicianProfileView: React.FC<CreateMusicianProfileViewProps> = ({ c
           const docRef = doc(db, 'musicians', profileId);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
-            const data = docSnap.data();
-            setFormData(data as any);
+            const data = docSnap.data() as Musician;
+            setFormData(data);
             setOriginalTeamId(data.teamId);
             if (data.instagramUrl) {
                 setInstagramId(data.instagramUrl.split('/').pop() || '');
             }
+            // Ensure photos is an array before spreading
             const photos = Array.isArray(data.photos) ? data.photos : [];
             setImagePreviews([...photos, null, null, null].slice(0, 3));
 
@@ -155,7 +154,7 @@ const CreateMusicianProfileView: React.FC<CreateMusicianProfileViewProps> = ({ c
             setLoadingTeams(true);
             try {
                 const teamsSnapshot = await getDocs(collection(db, 'teams'));
-                const teamsList = teamsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as TeamProfile));
+                const teamsList = teamsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Team));
                 setTeams(teamsList);
             } catch (error) {
                 console.error("Error fetching teams: ", error);
@@ -165,9 +164,10 @@ const CreateMusicianProfileView: React.FC<CreateMusicianProfileViewProps> = ({ c
         fetchTeams();
     }, []);
     
-    const handleTeamCreated = (newTeam: TeamProfile) => {
-        setTeams(prev => [...prev, newTeam]);
-        setFormValue('teamId', newTeam.id);
+    const handleTeamCreated = (newTeam: Team) => {
+        const fullTeam = { ...newTeam, id: newTeam.id };
+        setTeams(prev => [...prev, fullTeam]);
+        setFormValue('teamId', fullTeam.id);
         setShowTeamCreateModal(false);
     }
     
@@ -215,17 +215,18 @@ const CreateMusicianProfileView: React.FC<CreateMusicianProfileViewProps> = ({ c
         setError('');
 
         try {
+            // 1. Upload photos
             setIsUploading(true);
             const photoURLs = await Promise.all(
                 imagePreviews.map(async (preview, index) => {
                     const file = imageFiles[index];
-                    if (file) {
+                    if (file) { // New file to upload
                         const filePath = `profile_images/${currentUser.uid}/${Date.now()}_${file.name}`;
                         const storageRef = ref(storage, filePath);
                         const uploadResult = await uploadBytes(storageRef, file);
                         return getDownloadURL(uploadResult.ref);
                     }
-                    return preview;
+                    return preview; // Existing URL or null
                 })
             );
             setIsUploading(false);
@@ -242,6 +243,7 @@ const CreateMusicianProfileView: React.FC<CreateMusicianProfileViewProps> = ({ c
                 ownerUid: currentUser.uid,
             };
 
+            // 2. Perform DB operations
             if (isEditMode) {
                  const batch = writeBatch(db);
                  const musicianDocRef = doc(db, 'musicians', profileId);
@@ -253,11 +255,12 @@ const CreateMusicianProfileView: React.FC<CreateMusicianProfileViewProps> = ({ c
                  }
                  await batch.commit();
 
-            } else {
+            } else { // Create mode
                 const newMusicianDocRef = await addDoc(collection(db, 'musicians'), musicianData);
                 if (formData.teamId) await updateDoc(doc(db, 'teams', formData.teamId), { members: arrayUnion(newMusicianDocRef.id) });
             }
             
+            // 3. Update user's main profile in 'users' and auth
             await updateDoc(doc(db, 'users', currentUser.uid), { name: formData.name, photo: finalPhotos[0] });
             await updateProfile(currentUser, { displayName: formData.name, photoURL: finalPhotos[0] });
             
@@ -280,6 +283,7 @@ const CreateMusicianProfileView: React.FC<CreateMusicianProfileViewProps> = ({ c
     const isProcessing = isSubmitting || isUploading;
 
     if(isEditMode) {
+        // RENDER EDIT FORM
         return (
             <div className="p-6 animate-fade-in bg-white">
             <form onSubmit={handleSubmit} className="space-y-8">
@@ -320,7 +324,7 @@ const CreateMusicianProfileView: React.FC<CreateMusicianProfileViewProps> = ({ c
                     <div className="space-y-2">
                         {Object.entries(skillLevels).map(([level, desc]) => (
                             <label key={level} className="flex items-center p-3 bg-white rounded-md border border-gray-300 cursor-pointer">
-                                <input type="radio" name="skillLevel" value={level} checked={formData.skillLevel === level} onChange={() => setFormValue('skillLevel', level)} className="h-4 w-4 text-jazz-blue-900 bg-gray-100 border-gray-300 focus:ring-jazz-blue-900" />
+                                <input type="radio" name="skillLevel" value={level} checked={formData.skillLevel === level} onChange={() => setFormValue('skillLevel', level as any)} className="h-4 w-4 text-jazz-blue-900 bg-gray-100 border-gray-300 focus:ring-jazz-blue-900" />
                                 <span className="ml-3 text-sm text-gray-700">{desc}</span>
                             </label>
                         ))}
@@ -365,6 +369,7 @@ const CreateMusicianProfileView: React.FC<CreateMusicianProfileViewProps> = ({ c
         );
     }
     
+    // RENDER CREATE WIZARD
     const nextStep = () => setStep(s => Math.min(s + 1, totalSteps));
     const prevStep = () => setStep(s => Math.max(s - 1, 1));
     const isLastStep = step === totalSteps;
@@ -415,7 +420,7 @@ const CreateMusicianProfileView: React.FC<CreateMusicianProfileViewProps> = ({ c
                                 <div className="space-y-3">
                                     {Object.entries(skillLevels).map(([level, desc]) => (
                                         <label key={level} className={`flex items-start p-4 rounded-lg border cursor-pointer transition-colors ${formData.skillLevel === level ? 'bg-blue-50 border-jazz-blue-900' : 'bg-white border-gray-300 hover:bg-gray-50'}`}>
-                                            <input type="radio" name="skillLevel" value={level} checked={formData.skillLevel === level} onChange={() => setFormValue('skillLevel', level)} className="h-5 w-5 mt-0.5 text-jazz-blue-900 border-gray-300 focus:ring-jazz-blue-900" />
+                                            <input type="radio" name="skillLevel" value={level} checked={formData.skillLevel === level} onChange={() => setFormValue('skillLevel', level as any)} className="h-5 w-5 mt-0.5 text-jazz-blue-900 border-gray-300 focus:ring-jazz-blue-900" />
                                             <span className="ml-3 text-sm flex flex-col">
                                               <span className="font-bold text-gray-800">{level}</span>
                                               <span className="text-gray-600">{desc}</span>

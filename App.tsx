@@ -1,4 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
+import { ViewType, User as UserType } from './types';
 import BottomNav from './components/BottomNav';
 import HomeView from './components/HomeView';
 import ScheduleView from './components/ScheduleView';
@@ -6,7 +8,7 @@ import ProfileView from './components/ProfileView';
 import SettingsView from './components/SettingsView';
 import PencilIcon from './components/icons/PencilIcon';
 import { auth, db } from './firebase/config';
-import { onAuthStateChanged, getRedirectResult, User } from 'firebase/auth';
+import { onAuthStateChanged, User as FirebaseUser, getRedirectResult } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import AccountTypeSelectionModal from './components/AccountTypeSelectionModal';
 import CreateMusicianProfileView from './components/CreateMusicianProfileView';
@@ -18,27 +20,26 @@ import CreateVenueProfileView from './components/CreateVenueProfileView';
 import CreateTeamProfileView from './components/CreateTeamProfileView';
 import SearchIcon from './components/icons/SearchIcon';
 import PlusIcon from './components/icons/PlusIcon';
-import { UserProfile } from './types';
 
 
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState('홈');
+  const [currentView, setCurrentView] = useState<ViewType>('홈');
   const [isCreatingPost, setIsCreatingPost] = useState(false);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [currentUserProfile, setCurrentUserProfile] = useState<UserProfile | null>(null);
+  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+  const [currentUserProfile, setCurrentUserProfile] = useState<UserType | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [showAccountTypeSelection, setShowAccountTypeSelection] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   
-  const [editingProfile, setEditingProfile] = useState<{ type: string; id: string } | null>(null);
-  const [viewBeforeEdit, setViewBeforeEdit] = useState<string | null>(null);
+  const [editingProfile, setEditingProfile] = useState<{ type: 'musician' | 'venue' | 'team' | 'general', id: string } | null>(null);
+  const [viewBeforeEdit, setViewBeforeEdit] = useState<ViewType | null>(null);
   const [selectedFeedId, setSelectedFeedId] = useState<string | null>(null);
   const [overlayProfileUid, setOverlayProfileUid] = useState<string | null>(null);
   const [fetchFeedTrigger, setFetchFeedTrigger] = useState(0);
   
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [profileViewTab, setProfileViewTab] = useState('연주자');
+  const [profileViewTab, setProfileViewTab] = useState<'재즈바' | '연주자' | '연주팀'>('연주자');
 
 
   useEffect(() => {
@@ -64,7 +65,7 @@ const App: React.FC = () => {
         return () => window.removeEventListener('popstate', handlePopState);
     }, []);
   
-  const handleSetView = (view: string) => {
+  const handleSetView = (view: ViewType) => {
     if (!currentUser && (view === '일정' || view === '프로필' || view === '프로필 생성 (연주팀)')) {
       alert("서비스를 이용하려면 로그인이 필요합니다. '설정' 탭에서 로그인 또는 회원가입을 진행해주세요.");
       setCurrentView('설정');
@@ -80,24 +81,24 @@ const App: React.FC = () => {
     setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
   };
 
-  const fetchUserProfile = async (user: User): Promise<UserProfile | null> => {
+  const fetchUserProfile = async (user: FirebaseUser): Promise<UserType | null> => {
       if (!db) return null;
       const userDocRef = doc(db, 'users', user.uid);
       const userDocSnap = await getDoc(userDocRef);
       if (userDocSnap.exists()) {
-          return { uid: user.uid, ...userDocSnap.data() } as UserProfile;
+          return { uid: user.uid, ...userDocSnap.data() } as UserType;
       }
       return null;
   }
 
-  const processUser = async (user: User) => {
+  const processUser = async (user: FirebaseUser) => {
     if (!db) return;
     const userDocRef = doc(db, 'users', user.uid);
     let userProfile = await fetchUserProfile(user);
 
     if (!userProfile) {
-      const newUserProfileData: Omit<UserProfile, 'uid'> = {
-        name: user.displayName || user.email?.split('@')[0] || 'Anonymous',
+      const newUserProfileData = {
+        name: user.displayName || user.email?.split('@')[0],
         email: user.email,
         photo: user.photoURL,
       };
@@ -113,10 +114,12 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!auth) {
-        setAuthLoading(false);
-        return;
+    if (!auth || !db) {
+      setAuthLoading(false);
+      return;
     }
+    
+    getRedirectResult(auth).catch((error) => console.error("Google redirect error", error));
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (user) {
@@ -130,14 +133,10 @@ const App: React.FC = () => {
         setAuthLoading(false);
     });
 
-    getRedirectResult(auth).catch((error) => {
-        console.error("Error processing redirect result:", error);
-    });
-    
     return () => unsubscribe();
   }, []);
   
-  const navigateToEditor = (profile: { type: string; id: string }) => {
+  const navigateToEditor = (profile: { type: 'musician' | 'venue' | 'team' | 'general', id: string }) => {
     setViewBeforeEdit(currentView);
     setEditingProfile(profile);
     handleSetView('프로필 수정');
@@ -162,10 +161,11 @@ const App: React.FC = () => {
         setViewBeforeEdit(null);
         return;
     }
+    // Fallback for any other case
     handleSetView('홈');
   };
 
-  const handleAccountTypeSelected = async (user: User) => {
+  const handleAccountTypeSelected = async (user: FirebaseUser) => {
     setShowAccountTypeSelection(false);
     const updatedProfile = await fetchUserProfile(user);
     if (updatedProfile) {
@@ -289,7 +289,7 @@ const App: React.FC = () => {
   const needsBackButton = !!selectedFeedId || isCreatingPost || ['프로필 수정', '프로필 생성', '프로필 생성 (재즈바)', '프로필 생성 (연주팀)'].includes(currentView);
 
   return (
-    <div className="relative max-w-md mx-auto bg-gray-50 dark:bg-jazz-blue-900 text-gray-800 dark:text-gray-200 h-screen overflow-hidden font-sans flex flex-col">
+    <div className="relative max-w-md mx-auto bg-gray-50 dark:bg-jazz-blue-900 text-gray-800 dark:text-gray-200 h-screen font-sans flex flex-col overflow-hidden">
       <header className="sticky top-0 bg-white/80 dark:bg-jazz-blue-900/80 backdrop-blur-sm z-20 p-4 border-b border-gray-200 dark:border-jazz-blue-700 flex items-center h-16 flex-shrink-0">
            {currentView === '홈' && !selectedFeedId ? (
              <>
@@ -309,7 +309,7 @@ const App: React.FC = () => {
                  )}
                </div>
                 <h1 className="text-xl font-bold text-jazz-blue-900 dark:text-white text-center flex-grow truncate">
-                   {getHeaderTitle()}
+                   <button onClick={() => handleSetView('홈')} className="text-2xl font-bold text-jazz-blue-900 dark:text-white mr-auto">Jazzlink</button>
                </h1>
                <div className="w-10 flex justify-end" />
              </>

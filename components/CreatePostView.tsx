@@ -1,21 +1,22 @@
+
 import React, { useState, useRef } from 'react';
 import { db, storage } from '../firebase/config';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { User } from 'firebase/auth';
-import { UserProfile } from '../types';
+import { User as FirebaseUser } from 'firebase/auth';
+import { User as UserType } from '../types';
 
 interface CreatePostViewProps {
-  onClose: () => void;
-  onPostCreated: () => void;
-  currentUser: User | null;
-  currentUserProfile: UserProfile | null;
+    onClose: () => void;
+    onPostCreated: () => void;
+    currentUser: FirebaseUser | null;
+    currentUserProfile: UserType | null;
 }
 
 const CreatePostView: React.FC<CreatePostViewProps> = ({ onClose, onPostCreated, currentUser, currentUserProfile }) => {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
-    const [category, setCategory] = useState('잡담');
+    const [category, setCategory] = useState<'연주자 구함' | '연주 구함' | '잡담'>('잡담');
     const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null, null]);
     const [imagePreviews, setImagePreviews] = useState<(string | null)[]>([null, null, null]);
     const fileInputRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
@@ -104,7 +105,7 @@ const CreatePostView: React.FC<CreatePostViewProps> = ({ onClose, onPostCreated,
                     <div className="mb-4">
                         <select
                             value={category}
-                            onChange={(e) => setCategory(e.target.value)}
+                            onChange={(e) => setCategory(e.target.value as any)}
                             className="w-auto bg-transparent text-gray-800 dark:text-gray-200 font-bold text-lg border-0 focus:ring-0 p-0"
                         >
                             <option value="잡담">잡담</option>
