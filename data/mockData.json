@@ -1,0 +1,96 @@
+{
+  "musicians": {
+    "musician1": {
+      "name": "김민준",
+      "instrument": "드럼",
+      "photo": "https://picsum.photos/seed/m1/400/400",
+      "profile": "Art Blakey의 열정과 Tony Williams의 섬세함을 추구합니다.",
+      "videoLink": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+      "tagsMusician": ["정통파", "비밥", "하드밥"],
+      "ownerUid": "user1_uid",
+      "youtubeUrl": "https://youtube.com/user/drummerkim",
+      "instagramUrl": "https://instagram.com/drummerkim"
+    },
+    "musician2": {
+      "name": "이서연",
+      "instrument": "피아노",
+      "photo": "https://picsum.photos/seed/m2/400/400",
+      "profile": "Bill Evans와 같은 서정적인 연주를 좋아합니다.",
+      "videoLink": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+      "tagsMusician": ["서정적인", "스탠다드", "트리오"],
+      "ownerUid": "user2_uid",
+      "youtubeUrl": "https://youtube.com/user/pianolee",
+      "instagramUrl": "https://instagram.com/pianolee"
+    }
+  },
+  "venues": {
+    "venue1": {
+      "name": "블루 노트 서울",
+      "address": "서울시 강남구",
+      "photo": "https://picsum.photos/seed/venue1/400/300",
+      "description": "정통 뉴욕 재즈의 감성을 느낄 수 있는 공간입니다.",
+      "tagsVenue": ["스탠다드", "비밥", "라이브"],
+      "ownerUid": "owner1_uid",
+      "coordinates": { "lat": 37.5240, "lng": 127.0276 },
+      "googleMapsUrl": "https://maps.app.goo.gl/example1",
+      "instagramUrl": "https://instagram.com/bluenote",
+      "schedule": []
+    },
+    "venue2": {
+      "name": "올댓재즈",
+      "address": "서울시 이태원",
+      "photo": "https://picsum.photos/seed/venue2/400/300",
+      "description": "한국 재즈의 역사가 살아숨쉬는 곳, 올댓재즈입니다.",
+      "tagsVenue": ["라이브", "칵테일", "분위기 좋은"],
+      "ownerUid": "owner2_uid",
+      "coordinates": { "lat": 37.5401, "lng": 126.9946 },
+      "googleMapsUrl": "https://maps.app.goo.gl/allthatjazz",
+      "instagramUrl": "https://instagram.com/allthatjazz",
+      "schedule": []
+    }
+  },
+  "teams": {
+    "team1": {
+      "teamName": "미드나잇 그루브",
+      "teamPhoto": "https://picsum.photos/seed/t1/400/300",
+      "teamDescription": "서울을 중심으로 활동하는 퓨전 재즈 밴드입니다. 함께 그루브를 만들어갈 멤버를 찾습니다.",
+      "teamVideoLink": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+      "members": ["musician1", "musician2"],
+      "ownerUid": "user1_uid"
+    }
+  },
+  "communityFeed": {
+    "feed1": {
+      "category": "연주자 구함",
+      "title": "강남 재즈 클럽에서 피아니스트 구합니다",
+      "content": "매주 금, 토 연주 가능하신 분 찾습니다. 스탠다드 재즈 위주로 연주합니다. 페이는 협의 후 결정하겠습니다.",
+      "authorUid": "user2_uid",
+      "dateTime": "2024-11-08T20:00:00Z",
+      "instruments": ["피아노"],
+      "views": 128,
+      "likes": 15
+    },
+    "feed2": {
+      "category": "연주 구함",
+      "title": "경력 10년차 드러머입니다. 밴드 구해요.",
+      "content": "비밥, 퓨전, 펑크 등 다양한 장르 가능합니다. 합주 영상 링크 첨부합니다. 연락 주세요!",
+      "authorUid": "user1_uid",
+      "dateTime": "2024-11-09T18:30:00Z",
+      "instruments": ["드럼"],
+      "views": 256,
+      "likes": 22
+    }
+  },
+  "performances": {
+    "p1": {
+      "venueId": "venue2",
+      "title": "이서연 트리오",
+      "dateTime": "2024-08-20T20:00:00.000Z"
+    },
+    "p2": {
+      "venueId": "venue1",
+      "title": "김민준 퀄텟",
+      "dateTime": "2024-08-22T21:00:00.000Z"
+    }
+  }
+}
