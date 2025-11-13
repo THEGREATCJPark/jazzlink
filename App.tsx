@@ -1,6 +1,4 @@
-
 import React, { useState, useEffect } from 'react';
-import { ViewType, User as UserType } from './types';
 import BottomNav from './components/BottomNav';
 import HomeView from './components/HomeView';
 import ScheduleView from './components/ScheduleView';
@@ -8,7 +6,7 @@ import ProfileView from './components/ProfileView';
 import SettingsView from './components/SettingsView';
 import PencilIcon from './components/icons/PencilIcon';
 import { auth, db } from './firebase/config';
-import { onAuthStateChanged, User as FirebaseUser, getRedirectResult } from 'firebase/auth';
+import { onAuthStateChanged, getRedirectResult, User } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import AccountTypeSelectionModal from './components/AccountTypeSelectionModal';
 import CreateMusicianProfileView from './components/CreateMusicianProfileView';
@@ -20,26 +18,27 @@ import CreateVenueProfileView from './components/CreateVenueProfileView';
 import CreateTeamProfileView from './components/CreateTeamProfileView';
 import SearchIcon from './components/icons/SearchIcon';
 import PlusIcon from './components/icons/PlusIcon';
+import { UserProfile } from './types';
 
 
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<ViewType>('홈');
+  const [currentView, setCurrentView] = useState('홈');
   const [isCreatingPost, setIsCreatingPost] = useState(false);
-  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
-  const [currentUserProfile, setCurrentUserProfile] = useState<UserType | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUserProfile, setCurrentUserProfile] = useState<UserProfile | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [showAccountTypeSelection, setShowAccountTypeSelection] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   
-  const [editingProfile, setEditingProfile] = useState<{ type: 'musician' | 'venue' | 'team' | 'general', id: string } | null>(null);
-  const [viewBeforeEdit, setViewBeforeEdit] = useState<ViewType | null>(null);
+  const [editingProfile, setEditingProfile] = useState<{ type: string; id: string } | null>(null);
+  const [viewBeforeEdit, setViewBeforeEdit] = useState<string | null>(null);
   const [selectedFeedId, setSelectedFeedId] = useState<string | null>(null);
   const [overlayProfileUid, setOverlayProfileUid] = useState<string | null>(null);
   const [fetchFeedTrigger, setFetchFeedTrigger] = useState(0);
   
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [profileViewTab, setProfileViewTab] = useState<'재즈바' | '연주자' | '연주팀'>('연주자');
+  const [profileViewTab, setProfileViewTab] = useState('연주자');
 
 
   useEffect(() => {
@@ -65,7 +64,7 @@ const App: React.FC = () => {
         return () => window.removeEventListener('popstate', handlePopState);
     }, []);
   
-  const handleSetView = (view: ViewType) => {
+  const handleSetView = (view: string) => {
     if (!currentUser && (view === '일정' || view === '프로필' || view === '프로필 생성 (연주팀)')) {
       alert("서비스를 이용하려면 로그인이 필요합니다. '설정' 탭에서 로그인 또는 회원가입을 진행해주세요.");
       setCurrentView('설정');
@@ -81,24 +80,24 @@ const App: React.FC = () => {
     setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
   };
 
-  const fetchUserProfile = async (user: FirebaseUser): Promise<UserType | null> => {
+  const fetchUserProfile = async (user: User): Promise<UserProfile | null> => {
       if (!db) return null;
       const userDocRef = doc(db, 'users', user.uid);
       const userDocSnap = await getDoc(userDocRef);
       if (userDocSnap.exists()) {
-          return { uid: user.uid, ...userDocSnap.data() } as UserType;
+          return { uid: user.uid, ...userDocSnap.data() } as UserProfile;
       }
       return null;
   }
 
-  const processUser = async (user: FirebaseUser) => {
+  const processUser = async (user: User) => {
     if (!db) return;
     const userDocRef = doc(db, 'users', user.uid);
     let userProfile = await fetchUserProfile(user);
 
     if (!userProfile) {
-      const newUserProfileData = {
-        name: user.displayName || user.email?.split('@')[0],
+      const newUserProfileData: Omit<UserProfile, 'uid'> = {
+        name: user.displayName || user.email?.split('@')[0] || 'Anonymous',
         email: user.email,
         photo: user.photoURL,
       };
@@ -114,22 +113,12 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!auth || !db) {
-      setAuthLoading(false);
-      return;
+    if (!auth) {
+        setAuthLoading(false);
+        return;
     }
 
-    const setupAuth = async () => {
-      try {
-        // This resolves the redirect promise and updates the auth state internally.
-        // After this, onAuthStateChanged will fire with the correct user.
-        await getRedirectResult(auth);
-      } catch (error) {
-        console.error("Google redirect result error:", error);
-      }
-      
-      // Now, set up the single source of truth for auth state.
-      const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (user) {
             setCurrentUser(user);
             await processUser(user);
@@ -139,21 +128,16 @@ const App: React.FC = () => {
             setShowAccountTypeSelection(false);
         }
         setAuthLoading(false);
-      });
+    });
 
-      return unsubscribe;
-    };
-
-    const unsubscribePromise = setupAuth();
-
-    return () => {
-      unsubscribePromise.then(unsubscribe => {
-        if (unsubscribe) unsubscribe();
-      });
-    };
+    getRedirectResult(auth).catch((error) => {
+        console.error("Error processing redirect result:", error);
+    });
+    
+    return () => unsubscribe();
   }, []);
   
-  const navigateToEditor = (profile: { type: 'musician' | 'venue' | 'team' | 'general', id: string }) => {
+  const navigateToEditor = (profile: { type: string; id: string }) => {
     setViewBeforeEdit(currentView);
     setEditingProfile(profile);
     handleSetView('프로필 수정');
@@ -178,11 +162,10 @@ const App: React.FC = () => {
         setViewBeforeEdit(null);
         return;
     }
-    // Fallback for any other case
     handleSetView('홈');
   };
 
-  const handleAccountTypeSelected = async (user: FirebaseUser) => {
+  const handleAccountTypeSelected = async (user: User) => {
     setShowAccountTypeSelection(false);
     const updatedProfile = await fetchUserProfile(user);
     if (updatedProfile) {
@@ -306,7 +289,7 @@ const App: React.FC = () => {
   const needsBackButton = !!selectedFeedId || isCreatingPost || ['프로필 수정', '프로필 생성', '프로필 생성 (재즈바)', '프로필 생성 (연주팀)'].includes(currentView);
 
   return (
-    <div className="relative max-w-md mx-auto bg-gray-50 dark:bg-jazz-blue-900 text-gray-800 dark:text-gray-200 h-full font-sans flex flex-col">
+    <div className="relative max-w-md mx-auto bg-gray-50 dark:bg-jazz-blue-900 text-gray-800 dark:text-gray-200 h-screen overflow-hidden font-sans flex flex-col">
       <header className="sticky top-0 bg-white/80 dark:bg-jazz-blue-900/80 backdrop-blur-sm z-20 p-4 border-b border-gray-200 dark:border-jazz-blue-700 flex items-center h-16 flex-shrink-0">
            {currentView === '홈' && !selectedFeedId ? (
              <>

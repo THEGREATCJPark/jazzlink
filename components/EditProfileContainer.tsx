@@ -1,13 +1,15 @@
 import React from 'react';
-import { User as FirebaseUser } from 'firebase/auth';
-import { ViewType } from '../types';
 import { EditVenueProfileView, EditGeneralProfileView } from './EditProfileViews';
 import CreateMusicianProfileView from './CreateMusicianProfileView';
+import { User } from 'firebase/auth';
 
 interface EditProfileContainerProps {
-    profile: { type: 'musician' | 'venue' | 'team' | 'general', id: string };
-    currentUser: FirebaseUser | null;
-    setCurrentView: (view: ViewType) => void;
+    profile: {
+        type: string;
+        id: string;
+    };
+    currentUser: User | null;
+    setCurrentView: (view: string) => void;
 }
 
 const EditProfileContainer: React.FC<EditProfileContainerProps> = ({ profile, currentUser, setCurrentView }) => {

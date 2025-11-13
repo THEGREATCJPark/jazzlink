@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db, storage } from '../firebase/config';
 import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
-import { User as FirebaseUser, updateProfile } from 'firebase/auth';
-import { ViewType, Venue } from '../types';
+import { updateProfile, User } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import ChevronLeftIcon from './icons/ChevronLeftIcon';
 import PlusIcon from './icons/PlusIcon';
 
 interface CreateVenueProfileViewProps {
-    currentUser: FirebaseUser | null;
-    setCurrentView: (view: ViewType) => void;
+    currentUser: User | null;
+    setCurrentView: (view: string) => void;
 }
 
 const availableTags = [
@@ -18,12 +17,19 @@ const availableTags = [
     '식사 가능', '분위기 좋은', '데이트 코스', '단체석'
 ];
 
-const TagSelector: React.FC<{
-    availableTags: string[],
-    selectedTags: string[],
-    onTagToggle: (tag: string) => void,
-    title: string
-}> = ({ availableTags, selectedTags, onTagToggle, title }) => (
+interface TagSelectorProps {
+    availableTags: string[];
+    selectedTags: string[];
+    onTagToggle: (tag: string) => void;
+    title: string;
+}
+
+const TagSelector: React.FC<TagSelectorProps> = ({
+    availableTags,
+    selectedTags,
+    onTagToggle,
+    title
+}) => (
     <div>
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">{title}</h2>
         <div className="flex flex-wrap gap-2">
@@ -53,7 +59,7 @@ const CreateVenueProfileView: React.FC<CreateVenueProfileViewProps> = ({ current
     const [step, setStep] = useState(1);
     const totalSteps = 5;
 
-    const [formData, setFormData] = useState<Partial<Venue>>({
+    const [formData, setFormData] = useState({
         name: '',
         address: '',
         operatingHours: '',
@@ -61,19 +67,19 @@ const CreateVenueProfileView: React.FC<CreateVenueProfileViewProps> = ({ current
         instagramUrl: '',
         youtubeUrl: '',
         description: '',
-        tagsVenue: [],
-        photos: [],
+        tagsVenue: [] as string[],
+        photos: [] as string[],
     });
     const [instagramId, setInstagramId] = useState('');
     
-    const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null, null]);
-    const [imagePreviews, setImagePreviews] = useState<(string | null)[]>([null, null, null]);
+    const [imageFiles, setImageFiles] = useState<(File|null)[]>([null, null, null]);
+    const [imagePreviews, setImagePreviews] = useState<(string|null)[]>([null, null, null]);
     const fileInputRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
     
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
 
-    const setFormValue = <K extends keyof Venue>(key: K, value: Venue[K]) => {
+    const setFormValue = (key: string, value: any) => {
       setFormData(prev => ({...prev, [key]: value}));
     };
 
@@ -124,10 +130,10 @@ const CreateVenueProfileView: React.FC<CreateVenueProfileViewProps> = ({ current
                  finalPhotos.push(`https://ui-avatars.com/api/?name=${formData.name}&background=1A263A&color=FFC700&size=400`);
             }
 
-            const venueData: Omit<Venue, 'id' | 'schedule' | 'totalRating' | 'ratingCount'> = {
+            const venueData = {
                 ...formData,
-                name: formData.name!,
-                address: formData.address!,
+                name: formData.name,
+                address: formData.address,
                 description: formData.description || '',
                 tagsVenue: formData.tagsVenue || [],
                 ownerUid: currentUser.uid,
@@ -141,9 +147,8 @@ const CreateVenueProfileView: React.FC<CreateVenueProfileViewProps> = ({ current
 
             await addDoc(collection(db, 'venues'), venueData);
             
-            // Update user's main profile in 'users' and auth if needed
             const userDocRef = doc(db, 'users', currentUser.uid);
-            const userUpdateData: { name?: string, photo?: string } = {};
+            const userUpdateData: { name?: string; photo?: string } = {};
             let shouldUpdateAuth = false;
 
             if (!currentUser.displayName) {
@@ -247,7 +252,7 @@ const CreateVenueProfileView: React.FC<CreateVenueProfileViewProps> = ({ current
                                 <div>
                                     <label htmlFor="instagram" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Instagram ID</label>
                                     <div className="flex items-center">
-                                        <span className="inline-block bg-gray-200 dark:bg-jazz-blue-700 p-3 rounded-l-md border border-r-0 border-gray-300 dark:border-jazz-blue-600 text-gray-500 dark:text-jazz-gray-300">@</span>
+                                        <span className="inline-block bg-gray-200 dark:bg-jazz-blue-700 p-3 rounded-l-md border border-r-0 border-gray-300 dark:border-jazz-blue-600 text-gray-500 dark:text-gray-400">@</span>
                                         <input id="instagram" type="text" placeholder="allthatjazz_club" value={instagramId} onChange={(e) => setInstagramId(e.target.value)} className="w-full bg-gray-50 dark:bg-jazz-blue-800 border border-gray-300 dark:border-jazz-blue-700 rounded-r-md p-3 focus:ring-jazz-blue-900 focus:border-jazz-blue-900" />
                                     </div>
                                 </div>
@@ -257,17 +262,17 @@ const CreateVenueProfileView: React.FC<CreateVenueProfileViewProps> = ({ current
                      {step === 5 && (
                         <div>
                              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">마지막이에요!<br/>재즈바를 한 줄로 소개해주세요. (선택)</h2>
-                              <textarea id="profile" placeholder="정통 뉴욕 재즈의 감성을 느낄 수 있는 공간입니다." rows={5} value={formData.description} onChange={(e) => setFormValue('description', e.target.value)} className="w-full bg-gray-50 dark:bg-jazz-blue-800 border border-gray-300 dark:border-jazz-blue-700 rounded-md p-3 focus:ring-jazz-blue-900 focus:border-jazz-blue-900"></textarea>
+                              <textarea id="description" placeholder="정통 뉴욕 재즈의 감성을 느낄 수 있는 공간입니다." rows={5} value={formData.description} onChange={(e) => setFormValue('description', e.target.value)} className="w-full bg-gray-50 dark:bg-jazz-blue-800 border border-gray-300 dark:border-jazz-blue-700 rounded-md p-3 focus:ring-jazz-blue-900 focus:border-jazz-blue-900"></textarea>
                         </div>
                     )}
                 </div>
-                 <div className="mt-8">
+                <div className="mt-8">
                      {error && <p className="text-sm text-rose-500 mb-4 text-center">{error}</p>}
                      <button 
                         type="button" 
                         onClick={isLastStep ? handleSubmit : nextStep} 
                         disabled={isSubmitting}
-                        className="w-full bg-jazz-blue-900 text-white font-bold py-3 px-4 rounded-lg hover:bg-jazz-blue-800 transition-colors disabled:bg-gray-400 dark:bg-jazz-gold-500 dark:text-jazz-blue-900 dark:hover:bg-jazz-gold-600 dark:disabled:bg-jazz-gray-500"
+                        className="w-full bg-jazz-blue-900 text-white font-bold py-3 px-4 rounded-lg hover:bg-jazz-blue-800 transition-colors disabled:bg-gray-400 dark:disabled:bg-jazz-blue-700 dark:bg-jazz-gold-500 dark:text-jazz-blue-900 dark:hover:bg-jazz-gold-600"
                      >
                         {isSubmitting ? '저장 중...' : (isLastStep ? '완료' : '다음')}
                     </button>

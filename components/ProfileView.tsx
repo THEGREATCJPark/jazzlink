@@ -1,40 +1,27 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { db, USE_MOCK_DATA } from '../firebase/config';
 import { collection, getDocs, doc, getDoc, query, orderBy, runTransaction, Timestamp } from 'firebase/firestore';
-import { Musician, Team, Venue, User, Review } from '../types';
 import InstagramIcon from './icons/InstagramIcon';
 import YoutubeIcon from './icons/YoutubeIcon';
 import MapPinIcon from './icons/GoogleMapsIcon';
 import PencilIcon from './icons/PencilIcon';
 import StarIcon from './icons/StarIcon';
-import { musicians as mockMusicians, teams as mockTeams, venues as mockVenues } from '../data/mockData';
-import { User as FirebaseUser } from 'firebase/auth';
+import { musicians as mockMusiciansData, teams as mockTeamsData, venues as mockVenuesData } from '../data/mockData';
 import PlusIcon from './icons/PlusIcon';
-
-type NavigateToEditorFn = (profile: { type: 'musician' | 'venue' | 'team' | 'general', id: string }) => void;
-type ProfileTab = '재즈바' | '연주자' | '연주팀';
-
-interface ProfileViewProps {
-    currentUser: FirebaseUser | null;
-    navigateToEditor: NavigateToEditorFn;
-    onTabChange: (tab: ProfileTab) => void;
-    targetUid?: string | null;
-    isOverlay?: boolean;
-    onCloseOverlay?: () => void;
-}
+import { MusicianProfile, TeamProfile, VenueProfile, UserProfile } from '../types';
+import { User } from 'firebase/auth';
 
 const CUTE_ANIMAL_EMOJIS = ['🐶', '🐱', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁'];
 const getRandomCuteAnimalEmoji = () => CUTE_ANIMAL_EMOJIS[Math.floor(Math.random() * CUTE_ANIMAL_EMOJIS.length)];
 
-interface AvatarProps {
-    photos?: string[] | null;
-    name: string;
-    className: string;
-    textClassName?: string;
+interface ProfileAvatarProps {
+  photos: string[] | undefined;
+  name: string;
+  className: string;
+  textClassName?: string;
 }
 
-const ProfileAvatar: React.FC<AvatarProps> = ({ photos, name, className, textClassName = 'text-2xl' }) => {
+const ProfileAvatar: React.FC<ProfileAvatarProps> = ({ photos, name, className, textClassName = 'text-2xl' }) => {
     const photoUrl = useMemo(() => {
         if (Array.isArray(photos) && photos.length > 0 && photos[0]) {
             return photos[0];
@@ -42,7 +29,7 @@ const ProfileAvatar: React.FC<AvatarProps> = ({ photos, name, className, textCla
         return null;
     }, [photos]);
 
-    const randomEmoji = useMemo(() => getRandomCuteAnimalEmoji(), [name]); // Depend on name to get consistent emoji for the same person
+    const randomEmoji = useMemo(() => getRandomCuteAnimalEmoji(), [name]);
 
     if (photoUrl) {
         return <img src={photoUrl} alt={name} className={className} />;
@@ -51,7 +38,6 @@ const ProfileAvatar: React.FC<AvatarProps> = ({ photos, name, className, textCla
     const divClassName = `${className} flex items-center justify-center bg-gray-200 dark:bg-jazz-blue-700`;
     const finalDivClassName = divClassName.replace(/object-cover|object-center/g, '');
 
-
     return (
         <div className={finalDivClassName}>
             <span className={textClassName} role="img">{randomEmoji}</span>
@@ -59,8 +45,11 @@ const ProfileAvatar: React.FC<AvatarProps> = ({ photos, name, className, textCla
     );
 };
 
+interface ImageSliderProps {
+    images: string[] | undefined;
+}
 
-const ImageSlider: React.FC<{ images: string[] | null | undefined }> = ({ images }) => {
+const ImageSlider: React.FC<ImageSliderProps> = ({ images }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
 
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -101,11 +90,17 @@ const ImageSlider: React.FC<{ images: string[] | null | undefined }> = ({ images
     );
 };
 
+interface VenueDetailModalProps {
+    venue: VenueProfile;
+    onClose: () => void;
+    currentUser: User | null;
+    navigateToEditor: (profile: { type: string; id: string; }) => void;
+}
 
-const VenueDetailModal: React.FC<{ venue: Venue; onClose: () => void; currentUser: FirebaseUser | null; navigateToEditor: NavigateToEditorFn; }> = ({ venue, onClose, currentUser, navigateToEditor }) => {
+const VenueDetailModal: React.FC<VenueDetailModalProps> = ({ venue, onClose, currentUser, navigateToEditor }) => {
     const isOwner = currentUser && currentUser.uid === venue.ownerUid;
-    const [reviews, setReviews] = useState<Review[]>([]);
-    const [usersData, setUsersData] = useState<Map<string, User>>(new Map());
+    const [reviews, setReviews] = useState<any[]>([]);
+    const [usersData, setUsersData] = useState<Map<string, UserProfile>>(new Map());
     const [reviewsLoading, setReviewsLoading] = useState(true);
     const [newReviewContent, setNewReviewContent] = useState('');
     const [newReviewRating, setNewReviewRating] = useState(0);
@@ -126,8 +121,8 @@ const VenueDetailModal: React.FC<{ venue: Venue; onClose: () => void; currentUse
                 const querySnapshot = await getDocs(q);
                 const reviewsList = querySnapshot.docs.map(doc => {
                     const data = doc.data();
-                    if (data.dateTime?.toDate) data.dateTime = data.dateTime.toDate().toISOString();
-                    return { id: doc.id, ...data } as Review;
+                    if (data.dateTime instanceof Timestamp) data.dateTime = data.dateTime.toDate().toISOString();
+                    return { id: doc.id, ...data };
                 });
                 setReviews(reviewsList);
                 if (currentUser) {
@@ -142,7 +137,7 @@ const VenueDetailModal: React.FC<{ venue: Venue; onClose: () => void; currentUse
                         const userDocs = await Promise.all(userPromises);
                         const newUsers = new Map(usersData);
                         userDocs.forEach(userDoc => {
-                            if (userDoc.exists()) newUsers.set(userDoc.id, { uid: userDoc.id, ...userDoc.data() } as User);
+                            if (userDoc.exists()) newUsers.set(userDoc.id, { uid: userDoc.id, ...userDoc.data() } as UserProfile);
                         });
                         setUsersData(newUsers);
                     }
@@ -182,7 +177,7 @@ const VenueDetailModal: React.FC<{ venue: Venue; onClose: () => void; currentUse
                  setRatingCount(newRatingCount);
             });
             
-            const newReview: Review = { id: 'temp' + Date.now(), authorUid: currentUser.uid, content: newReviewContent, rating: newReviewRating, dateTime: new Date().toISOString(), isAnonymous: isAnonymous };
+            const newReview = { id: 'temp' + Date.now(), authorUid: currentUser.uid, content: newReviewContent, rating: newReviewRating, dateTime: new Date().toISOString(), isAnonymous: isAnonymous };
             setReviews(prev => [newReview, ...prev]);
             setNewReviewContent('');
             setNewReviewRating(0);
@@ -279,7 +274,14 @@ const VenueDetailModal: React.FC<{ venue: Venue; onClose: () => void; currentUse
   );
 };
 
-const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; currentUser: FirebaseUser | null; navigateToEditor: NavigateToEditorFn; }> = ({ musician, onClose, currentUser, navigateToEditor }) => {
+interface MusicianDetailModalProps {
+    musician: MusicianProfile;
+    onClose: () => void;
+    currentUser: User | null;
+    navigateToEditor: (profile: { type: string; id: string; }) => void;
+}
+
+const MusicianDetailModal: React.FC<MusicianDetailModalProps> = ({ musician, onClose, currentUser, navigateToEditor }) => {
     const calculateExperience = (startYear: number) => {
         const numericStartYear = Number(startYear);
         if (!numericStartYear || numericStartYear > new Date().getFullYear()) return '신입';
@@ -289,8 +291,8 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
     const skillLevelText = { '초보': '연습한 곡 위주로 합주 가능', '중급': '대부분의 스탠다드 연주 가능', '프로': '공연 리딩 및 즉흥 연주 가능' };
     const isOwner = currentUser && currentUser.uid === musician.ownerUid;
 
-    const [reviews, setReviews] = useState<Review[]>([]);
-    const [usersData, setUsersData] = useState<Map<string, User>>(new Map());
+    const [reviews, setReviews] = useState<any[]>([]);
+    const [usersData, setUsersData] = useState<Map<string, UserProfile>>(new Map());
     const [reviewsLoading, setReviewsLoading] = useState(true);
     const [newReviewContent, setNewReviewContent] = useState('');
     const [newReviewRating, setNewReviewRating] = useState(0);
@@ -311,8 +313,8 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
                 const querySnapshot = await getDocs(q);
                 const reviewsList = querySnapshot.docs.map(doc => {
                     const data = doc.data();
-                    if (data.dateTime?.toDate) data.dateTime = data.dateTime.toDate().toISOString();
-                    return { id: doc.id, ...data } as Review;
+                    if (data.dateTime instanceof Timestamp) data.dateTime = data.dateTime.toDate().toISOString();
+                    return { id: doc.id, ...data };
                 });
                 setReviews(reviewsList);
                 if (currentUser) {
@@ -327,7 +329,7 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
                         const userDocs = await Promise.all(userPromises);
                         const newUsers = new Map(usersData);
                         userDocs.forEach(userDoc => {
-                            if (userDoc.exists()) newUsers.set(userDoc.id, { uid: userDoc.id, ...userDoc.data() } as User);
+                            if (userDoc.exists()) newUsers.set(userDoc.id, { uid: userDoc.id, ...userDoc.data() } as UserProfile);
                         });
                         setUsersData(newUsers);
                     }
@@ -367,7 +369,7 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
                 setRatingCount(newRatingCount);
             });
             
-            const newReview: Review = { id: 'temp' + Date.now(), authorUid: currentUser.uid, content: newReviewContent, rating: newReviewRating, dateTime: new Date().toISOString(), isAnonymous: isAnonymous };
+            const newReview = { id: 'temp' + Date.now(), authorUid: currentUser.uid, content: newReviewContent, rating: newReviewRating, dateTime: new Date().toISOString(), isAnonymous: isAnonymous };
             setReviews(prev => [newReview, ...prev]);
             setNewReviewContent('');
             setNewReviewRating(0);
@@ -465,12 +467,21 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
     )
 };
 
-const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelectMusician: (m: Musician) => void, onClose: () => void; currentUser: FirebaseUser | null; navigateToEditor: NavigateToEditorFn; }> = ({ team, allMusicians, onSelectMusician, onClose, currentUser, navigateToEditor }) => {
-    const teamMembers = team.members.map(memberId => allMusicians.find(m => m.id === memberId)).filter((m): m is Musician => !!m);
+interface TeamDetailModalProps {
+    team: TeamProfile;
+    allMusicians: MusicianProfile[];
+    onSelectMusician: (musician: MusicianProfile) => void;
+    onClose: () => void;
+    currentUser: User | null;
+    navigateToEditor: (profile: { type: string; id: string; }) => void;
+}
+
+const TeamDetailModal: React.FC<TeamDetailModalProps> = ({ team, allMusicians, onSelectMusician, onClose, currentUser, navigateToEditor }) => {
+    const teamMembers = team.members.map(memberId => allMusicians.find(m => m.id === memberId)).filter((m): m is MusicianProfile => !!m);
     const isOwner = currentUser && currentUser.uid === team.ownerUid;
     
-    const [reviews, setReviews] = useState<Review[]>([]);
-    const [usersData, setUsersData] = useState<Map<string, User>>(new Map());
+    const [reviews, setReviews] = useState<any[]>([]);
+    const [usersData, setUsersData] = useState<Map<string, UserProfile>>(new Map());
     const [reviewsLoading, setReviewsLoading] = useState(true);
     const [newReviewContent, setNewReviewContent] = useState('');
     const [newReviewRating, setNewReviewRating] = useState(0);
@@ -491,8 +502,8 @@ const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelect
                 const querySnapshot = await getDocs(q);
                 const reviewsList = querySnapshot.docs.map(doc => {
                     const data = doc.data();
-                    if (data.dateTime?.toDate) data.dateTime = data.dateTime.toDate().toISOString();
-                    return { id: doc.id, ...data } as Review;
+                    if (data.dateTime instanceof Timestamp) data.dateTime = data.dateTime.toDate().toISOString();
+                    return { id: doc.id, ...data };
                 });
                 setReviews(reviewsList);
                 if (currentUser) {
@@ -507,7 +518,7 @@ const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelect
                         const userDocs = await Promise.all(userPromises);
                         const newUsers = new Map(usersData);
                         userDocs.forEach(userDoc => {
-                            if (userDoc.exists()) newUsers.set(userDoc.id, { uid: userDoc.id, ...userDoc.data() } as User);
+                            if (userDoc.exists()) newUsers.set(userDoc.id, { uid: userDoc.id, ...userDoc.data() } as UserProfile);
                         });
                         setUsersData(newUsers);
                     }
@@ -538,7 +549,7 @@ const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelect
                 setAverageRating(newTotalRating / newRatingCount);
                 setRatingCount(newRatingCount);
             });
-            const newReview: Review = { id: 'temp' + Date.now(), authorUid: currentUser.uid, content: newReviewContent, rating: newReviewRating, dateTime: new Date().toISOString(), isAnonymous: isAnonymous };
+            const newReview = { id: 'temp' + Date.now(), authorUid: currentUser.uid, content: newReviewContent, rating: newReviewRating, dateTime: new Date().toISOString(), isAnonymous: isAnonymous };
             setReviews(prev => [newReview, ...prev]);
             setNewReviewContent('');
             setNewReviewRating(0);
@@ -643,27 +654,35 @@ const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelect
     );
 };
 
+interface ProfileViewProps {
+  currentUser: User | null;
+  navigateToEditor: (profile: { type: string; id: string; }) => void;
+  onTabChange: (tab: string) => void;
+  targetUid?: string | null;
+  isOverlay?: boolean;
+  onCloseOverlay?: () => void;
+}
 
 const ProfileView: React.FC<ProfileViewProps> = ({ currentUser, navigateToEditor, onTabChange, targetUid, isOverlay = false, onCloseOverlay = () => {} }) => {
-  const [viewState, setViewState] = useState<ProfileTab>('연주자');
-  const [instrumentFilter, setInstrumentFilter] = useState<string>('전체');
-  const [regionFilter, setRegionFilter] = useState<string>('전체');
-  const [selectedMusician, setSelectedMusician] = useState<Musician | null>(null);
-  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
-  const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+  const [viewState, setViewState] = useState('연주자');
+  const [instrumentFilter, setInstrumentFilter] = useState('전체');
+  const [regionFilter, setRegionFilter] = useState('전체');
+  const [selectedMusician, setSelectedMusician] = useState<MusicianProfile | null>(null);
+  const [selectedTeam, setSelectedTeam] = useState<TeamProfile | null>(null);
+  const [selectedVenue, setSelectedVenue] = useState<VenueProfile | null>(null);
 
-  const [musicians, setMusicians] = useState<Musician[]>([]);
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [venues, setVenues] = useState<Venue[]>([]);
+  const [musicians, setMusicians] = useState<MusicianProfile[]>([]);
+  const [teams, setTeams] = useState<TeamProfile[]>([]);
+  const [venues, setVenues] = useState<VenueProfile[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       if (USE_MOCK_DATA || !db) {
-        setMusicians(mockMusicians as any[]);
-        setTeams(mockTeams as any[]);
-        setVenues(mockVenues);
+        setMusicians(mockMusiciansData);
+        setTeams(mockTeamsData);
+        setVenues(mockVenuesData);
         setLoading(false);
         return;
       }
@@ -673,15 +692,15 @@ const ProfileView: React.FC<ProfileViewProps> = ({ currentUser, navigateToEditor
           getDocs(collection(db, 'teams')),
           getDocs(collection(db, 'venues')),
         ]);
-        setMusicians(musiciansSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Musician)));
-        setTeams(teamsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Team)));
-        setVenues(venuesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Venue)));
+        setMusicians(musiciansSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as MusicianProfile)));
+        setTeams(teamsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as TeamProfile)));
+        setVenues(venuesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as VenueProfile)));
       } catch (error) {
         console.error("Error fetching profiles:", error);
         console.warn("Falling back to mock data due to Firestore error.");
-        setMusicians(mockMusicians as any[]);
-        setTeams(mockTeams as any[]);
-        setVenues(mockVenues);
+        setMusicians(mockMusiciansData);
+        setTeams(mockTeamsData);
+        setVenues(mockVenuesData);
       }
       setLoading(false);
     };
@@ -734,7 +753,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ currentUser, navigateToEditor
   }, [venues, regionFilter]);
 
 
-  const handleSelectMusician = (musician: Musician) => {
+  const handleSelectMusician = (musician: MusicianProfile) => {
     setSelectedTeam(null);
     setSelectedMusician(musician);
   };
@@ -748,7 +767,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ currentUser, navigateToEditor
     }
   };
   
-  const TABS:ProfileTab[] = ['재즈바', '연주자', '연주팀'];
+  const TABS = ['재즈바', '연주자', '연주팀'];
   const INSTRUMENTS = ['전체', '피아노', '베이스', '드럼', '색소폰', '트럼펫', '기타', '보컬'];
 
   const renderContent = () => {

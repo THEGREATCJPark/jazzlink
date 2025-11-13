@@ -1,14 +1,13 @@
-
 import React, { useState } from 'react';
 import { db } from '../firebase/config';
 import { collection, addDoc } from 'firebase/firestore';
-import { User as FirebaseUser } from 'firebase/auth';
-import { Team } from '../types';
+import { User } from 'firebase/auth';
+import { TeamProfile } from '../types';
 
 interface CreateTeamModalProps {
     onClose: () => void;
-    onTeamCreated: (newTeam: Team) => void;
-    currentUser: FirebaseUser | null;
+    onTeamCreated: (newTeam: TeamProfile) => void;
+    currentUser: User | null;
 }
 
 const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ onClose, onTeamCreated, currentUser }) => {

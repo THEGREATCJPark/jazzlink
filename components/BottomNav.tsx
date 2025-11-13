@@ -1,16 +1,15 @@
 import React from 'react';
-import { ViewType } from '../types';
 import HomeIcon from './icons/HomeIcon';
 import UserIcon from './icons/UserIcon';
 import CogIcon from './icons/CogIcon';
 import CalendarIcon from './icons/CalendarIcon';
 
 interface BottomNavProps {
-  currentView: ViewType;
-  setCurrentView: (view: ViewType) => void;
+  currentView: string;
+  setCurrentView: (view: string) => void;
 }
 
-const navItems: { view: ViewType; label: string; icon: React.FC<{ className?: string }> }[] = [
+const navItems = [
   { view: '홈', label: '홈', icon: HomeIcon },
   { view: '일정', label: '일정', icon: CalendarIcon },
   { view: '프로필', label: '프로필', icon: UserIcon },

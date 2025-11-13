@@ -1,6 +1,7 @@
 
-import React, { useState, useEffect, FC } from 'react';
-import { auth, db, USE_MOCK_DATA } from '../firebase/config';
+
+import React, { useState, useEffect } from 'react';
+import { auth, db, USE_MOCK_DATA } from '../firebase/config.js';
 import { 
     GoogleAuthProvider, 
     signInWithRedirect, 
@@ -8,27 +9,15 @@ import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     sendPasswordResetEmail,
-    deleteUser,
-    User
+    deleteUser
 } from 'firebase/auth';
 import { doc, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
-import GoogleIcon from './icons/GoogleIcon';
-import CheckCircleIcon from './icons/CheckCircleIcon';
-import { UserProfile } from '../types';
+import GoogleIcon from './icons/GoogleIcon.js';
+import CheckCircleIcon from './icons/CheckCircleIcon.js';
 
-interface SettingsViewProps {
-    currentUser: User | null;
-    currentUserProfile: UserProfile | null;
-    authLoading: boolean;
-    navigateToEditor: (profile: { type: string; id: string; }) => void;
-    navigateToProfileCreation: () => void;
-    toggleTheme: () => void;
-    theme: string;
-}
-
-const SettingsView: FC<SettingsViewProps> = ({ currentUser, currentUserProfile, authLoading, navigateToEditor, navigateToProfileCreation, toggleTheme, theme }) => {
-  const [contentProfile, setContentProfile] = useState<{ type: string; id: string; } | null>(null);
-  const [authError, setAuthError] = useState<{code?: string; message: string} | null>(null);
+const SettingsView = ({ currentUser, currentUserProfile, authLoading, navigateToEditor, navigateToProfileCreation, toggleTheme, theme }) => {
+  const [contentProfile, setContentProfile] = useState(null);
+  const [authError, setAuthError] = useState(null);
   const [authMode, setAuthMode] = useState('login');
   
   const [email, setEmail] = useState('');
@@ -36,11 +25,11 @@ const SettingsView: FC<SettingsViewProps> = ({ currentUser, currentUserProfile, 
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [resetMessageSent, setResetMessageSent] = useState(false);
-  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
+  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState(null);
 
 
   useEffect(() => {
-      const handleBeforeInstallPrompt = (e: Event) => {
+      const handleBeforeInstallPrompt = (e) => {
           console.log('beforeinstallprompt event fired');
           e.preventDefault();
           setDeferredInstallPrompt(e);
@@ -55,8 +44,8 @@ const SettingsView: FC<SettingsViewProps> = ({ currentUser, currentUserProfile, 
     const fetchContentProfile = async () => {
         if (currentUser && currentUserProfile && currentUserProfile.accountType && db) {
             const type = currentUserProfile.accountType;
-            let collectionName: string | null = null;
-            let profileType: string | null = null;
+            let collectionName = null;
+            let profileType = null;
             
             if (type === 'musician') { collectionName = 'musicians'; profileType = 'musician'; }
             else if (type === 'venue_owner') { collectionName = 'venues'; profileType = 'venue'; }
@@ -72,7 +61,7 @@ const SettingsView: FC<SettingsViewProps> = ({ currentUser, currentUserProfile, 
                     } else {
                         setContentProfile(null);
                     }
-                } catch (e: any) {
+                } catch (e) {
                     console.error("Error checking for content profile:", e);
                     if (e.code === 'failed-precondition') {
                       console.error("A Firestore index is required for this query.");
@@ -109,13 +98,13 @@ const SettingsView: FC<SettingsViewProps> = ({ currentUser, currentUserProfile, 
     const provider = new GoogleAuthProvider();
     try {
       await signInWithRedirect(auth, provider);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Google sign-in redirect initiation error", error);
       setAuthError(error);
     }
   };
 
-  const handleEmailAuth = async (e: React.FormEvent) => {
+  const handleEmailAuth = async (e) => {
     e.preventDefault();
     if (!auth) return;
 
@@ -131,7 +120,7 @@ const SettingsView: FC<SettingsViewProps> = ({ currentUser, currentUserProfile, 
         } else {
             await signInWithEmailAndPassword(auth, email, password);
         }
-    } catch (error: any) {
+    } catch (error) {
         let message = '오류가 발생했습니다. 다시 시도해주세요.';
         switch (error.code) {
             case 'auth/weak-password':
@@ -157,7 +146,7 @@ const SettingsView: FC<SettingsViewProps> = ({ currentUser, currentUserProfile, 
     setIsProcessing(false);
   };
   
-  const handlePasswordReset = async (e: React.FormEvent) => {
+  const handlePasswordReset = async (e) => {
     e.preventDefault();
     if (!auth || !email) return;
     
@@ -220,7 +209,7 @@ const SettingsView: FC<SettingsViewProps> = ({ currentUser, currentUserProfile, 
         await deleteUser(currentUser);
 
         alert('회원 탈퇴가 완료되었습니다. 이용해주셔서 감사합니다.');
-    } catch (error: any) {
+    } catch (error) {
         console.error("Account deletion error", error);
         if (error.code === 'auth/requires-recent-login') {
             setAuthError({ message: '보안을 위해 다시 로그인한 후 회원 탈퇴를 시도해주세요.' });

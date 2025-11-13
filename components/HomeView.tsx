@@ -1,17 +1,22 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { db, USE_MOCK_DATA } from '../firebase/config';
 import { collection, getDocs, query, orderBy, Timestamp } from 'firebase/firestore';
-import { CommunityFeed, User as UserType } from '../types';
 import EyeIcon from './icons/EyeIcon';
 import HeartIcon from './icons/HeartIcon';
-import { communityFeed as mockFeed } from '../data/mockData';
-import { User as FirebaseUser } from 'firebase/auth';
+import { communityFeed as mockFeedData } from '../data/mockData';
 import SearchIcon from './icons/SearchIcon';
+import { FeedItem as FeedItemType } from '../types';
+import { User } from 'firebase/auth';
 
-const FeedItem: React.FC<{ item: CommunityFeed; onSelect: () => void; currentUser: FirebaseUser | null }> = ({ item, onSelect, currentUser }) => {
+interface FeedItemProps {
+  item: FeedItemType;
+  onSelect: () => void;
+  currentUser: User | null;
+}
+
+const FeedItem: React.FC<FeedItemProps> = ({ item, onSelect, currentUser }) => {
   const categoryStyle = item.category === '연주자 구함' ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300' : item.category === '연주 구함' ? 'bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300' : 'bg-gray-200 text-gray-800 dark:bg-jazz-blue-700 dark:text-jazz-gray-200';
-  const hasLiked = currentUser ? item.likedBy.includes(currentUser.uid) : false;
+  const hasLiked = currentUser && item.likedBy ? item.likedBy.includes(currentUser.uid) : false;
 
   return (
     <div onClick={onSelect} className="bg-white dark:bg-jazz-blue-800 p-4 rounded-lg border border-gray-200 dark:border-jazz-blue-700 hover:border-jazz-blue-600 dark:hover:border-jazz-gold-500 transition-all cursor-pointer shadow-sm hover:shadow-md">
@@ -46,7 +51,7 @@ const FeedItem: React.FC<{ item: CommunityFeed; onSelect: () => void; currentUse
             </div>
             <div className="flex items-center space-x-1">
                 <HeartIcon className={`w-4 h-4 ${hasLiked ? 'text-rose-500' : ''}`} filled={hasLiked} />
-                <span>{item.likedBy.length}</span>
+                <span>{item.likedBy?.length || 0}</span>
             </div>
         </div>
       </div>
@@ -54,29 +59,27 @@ const FeedItem: React.FC<{ item: CommunityFeed; onSelect: () => void; currentUse
   );
 };
 
-interface HomeViewProps {
-    currentUser: FirebaseUser | null;
-    onSelectFeedItem: (feedId: string) => void;
-    fetchFeedTrigger: number;
-    showSearch: boolean;
-    searchQuery: string;
-    setSearchQuery: (query: string) => void;
-}
-
-type FilterType = '전체' | '연주자 구함' | '연주 구함' | '인기' | '잡담';
 const INSTRUMENTS = ['전체', '피아노', '베이스', '드럼', '색소폰', '트럼펫', '기타', '보컬'];
 
+interface HomeViewProps {
+  currentUser: User | null;
+  onSelectFeedItem: (id: string) => void;
+  fetchFeedTrigger: number;
+  showSearch: boolean;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+}
 
 const HomeView: React.FC<HomeViewProps> = ({ currentUser, onSelectFeedItem, fetchFeedTrigger, showSearch, searchQuery, setSearchQuery }) => {
-  const [filter, setFilter] = useState<FilterType>('전체');
+  const [filter, setFilter] = useState('전체');
   const [instrumentFilter, setInstrumentFilter] = useState('전체');
-  const [feed, setFeed] = useState<CommunityFeed[]>([]);
+  const [feed, setFeed] = useState<FeedItemType[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchFeed = async () => {
     setLoading(true);
     if (USE_MOCK_DATA || !db) {
-      setFeed(mockFeed);
+      setFeed(mockFeedData);
       setLoading(false);
       return;
     }
@@ -86,20 +89,22 @@ const HomeView: React.FC<HomeViewProps> = ({ currentUser, onSelectFeedItem, fetc
       const feedSnapshot = await getDocs(q);
       const feedList = feedSnapshot.docs.map(doc => {
         const data = doc.data();
-        if (data.dateTime?.toDate) {
-            data.dateTime = data.dateTime.toDate().toISOString();
+        let dateTime = data.dateTime;
+        if (dateTime instanceof Timestamp) {
+            dateTime = dateTime.toDate().toISOString();
         }
         const viewedBy = Array.isArray(data.viewedBy) ? data.viewedBy : [];
+        const likedBy = Array.isArray(data.likedBy) ? data.likedBy : [];
         const authorName = data.authorName || '익명';
         const authorPhoto = data.authorPhoto || `https://ui-avatars.com/api/?name=${authorName}&background=1A263A&color=FFC700`;
-        return { id: doc.id, ...data, viewedBy, authorName, authorPhoto } as CommunityFeed;
+        return { id: doc.id, ...data, dateTime, viewedBy, likedBy, authorName, authorPhoto } as FeedItemType;
       });
       setFeed(feedList);
 
     } catch (error) {
       console.error("Error fetching community feed: ", error);
       console.warn("Falling back to mock data due to Firestore error.");
-      setFeed(mockFeed);
+      setFeed(mockFeedData);
     }
     setLoading(false);
   };
@@ -120,7 +125,7 @@ const HomeView: React.FC<HomeViewProps> = ({ currentUser, onSelectFeedItem, fetc
     }
 
     if (filter === '인기') {
-        return sortedFeed.sort((a,b) => (b.likedBy.length + (b.viewedBy?.length || 0)) - (a.likedBy.length + (a.viewedBy?.length || 0)));
+        return sortedFeed.sort((a,b) => ((b.likedBy?.length || 0) + (b.viewedBy?.length || 0)) - ((a.likedBy?.length || 0) + (a.viewedBy?.length || 0)));
     }
 
     if (filter !== '전체') {
@@ -134,12 +139,12 @@ const HomeView: React.FC<HomeViewProps> = ({ currentUser, onSelectFeedItem, fetc
     return sortedFeed;
   }, [filter, instrumentFilter, feed, searchQuery]);
 
-  const handleFilterChange = (f: FilterType) => {
+  const handleFilterChange = (f: string) => {
     setFilter(f);
     setInstrumentFilter('전체');
   };
 
-  const filters: FilterType[] = ['전체', '연주자 구함', '연주 구함', '인기', '잡담'];
+  const filters = ['전체', '연주자 구함', '연주 구함', '인기', '잡담'];
 
   return (
     <div className="p-4 relative">
