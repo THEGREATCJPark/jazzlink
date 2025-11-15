@@ -17,7 +17,7 @@ import ChevronLeftIcon from './components/icons/ChevronLeftIcon';
 import CommunityFeedDetailView from './components/CommunityFeedDetailView';
 import CreatePostView from './components/CreatePostView';
 import CreateVenueProfileView from './components/CreateVenueProfileView';
-import CreateTeamProfileView from './components/CreateTeamProfileView';
+import TeamProfileEditorView from './components/TeamProfileEditorView';
 import SearchIcon from './components/icons/SearchIcon';
 import PlusIcon from './components/icons/PlusIcon';
 
@@ -224,7 +224,7 @@ const App: React.FC = () => {
       case '프로필 생성 (재즈바)':
         return <CreateVenueProfileView currentUser={currentUser} setCurrentView={handleSetView} />;
       case '프로필 생성 (연주팀)':
-        return <CreateTeamProfileView currentUser={currentUser} setCurrentView={handleSetView} />;
+        return <TeamProfileEditorView currentUser={currentUser} setCurrentView={handleSetView} />;
       case '프로필 수정':
         if (!editingProfile) return <ProfileView currentUser={currentUser} navigateToEditor={navigateToEditor} onTabChange={setProfileViewTab} />;
         return <EditProfileContainer profile={editingProfile} currentUser={currentUser} setCurrentView={handleSetView} />;

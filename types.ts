@@ -65,12 +65,21 @@ export interface Musician {
   ratingCount?: number;
 }
 
+export interface TeamMember {
+  name: string;
+  instrument: string;
+  isLeader?: boolean;
+  musicianId?: string; // Links to a musician profile in the DB
+  ownerUid?: string; // The UID of the user who owns the musician profile
+}
+
+
 export interface Team {
   id: string;
   teamName: string;
   teamPhotos: string[];
   teamDescription: string;
-  members: string[]; // Array of Musician IDs
+  members: TeamMember[];
   ownerUid: string;
   region?: string;
   youtubeUrl?: string;

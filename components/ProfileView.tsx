@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { db, USE_MOCK_DATA } from '../firebase/config';
 import { collection, getDocs, doc, getDoc, query, orderBy, runTransaction, Timestamp } from 'firebase/firestore';
-import { Musician, Team, Venue, User, Review } from '../types';
+import { Musician, Team, Venue, User, Review, TeamMember } from '../types';
 import InstagramIcon from './icons/InstagramIcon';
 import YoutubeIcon from './icons/YoutubeIcon';
 import MapPinIcon from './icons/GoogleMapsIcon';
@@ -11,6 +11,7 @@ import StarIcon from './icons/StarIcon';
 import { musicians as mockMusicians, teams as mockTeams, venues as mockVenues } from '../data/mockData';
 import { User as FirebaseUser } from 'firebase/auth';
 import PlusIcon from './icons/PlusIcon';
+import LeaderIcon from './icons/LeaderIcon';
 
 type NavigateToEditorFn = (profile: { type: 'musician' | 'venue' | 'team' | 'general', id: string }) => void;
 type ProfileTab = '재즈바' | '연주자' | '연주팀';
@@ -442,9 +443,12 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
 };
 
 const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelectMusician: (m: Musician) => void, onClose: () => void; currentUser: FirebaseUser | null; navigateToEditor: NavigateToEditorFn; }> = ({ team, allMusicians, onSelectMusician, onClose, currentUser, navigateToEditor }) => {
-    const teamMembers = team.members.map(memberId => allMusicians.find(m => m.id === memberId)).filter((m): m is Musician => !!m);
     const isOwner = currentUser && currentUser.uid === team.ownerUid;
-    
+    const isTeamMember = useMemo(() => {
+        if (!currentUser) return false;
+        return team.members.some(member => member.ownerUid === currentUser.uid);
+    }, [currentUser, team.members]);
+
     const [reviews, setReviews] = useState<Review[]>([]);
     const [usersData, setUsersData] = useState<Map<string, User>>(new Map());
     const [reviewsLoading, setReviewsLoading] = useState(true);
@@ -529,8 +533,8 @@ const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelect
             <div className="relative">
                 <ImageSlider images={team.teamPhotos} />
                  <button onClick={onClose} className="absolute top-2 right-2 bg-black bg-opacity-50 text-white rounded-full p-1.5 hover:bg-opacity-75"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg></button>
-                 {isOwner && (
-                    <button onClick={() => { onClose(); alert('팀 프로필 수정 기능은 곧 추가될 예정입니다.'); }} className="absolute top-2 left-2 bg-white/80 text-gray-800 py-1 px-3 rounded-full text-sm font-semibold flex items-center space-x-1 hover:bg-gray-200 transition-colors">
+                 {(isOwner || isTeamMember) && (
+                    <button onClick={() => { onClose(); navigateToEditor({ type: 'team', id: team.id }); }} className="absolute top-2 left-2 bg-white/80 text-gray-800 py-1 px-3 rounded-full text-sm font-semibold flex items-center space-x-1 hover:bg-gray-200 transition-colors">
                         <PencilIcon className="w-4 h-4" />
                         <span>수정</span>
                     </button>
@@ -547,15 +551,27 @@ const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelect
                 
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 border-t border-gray-200 dark:border-jazz-blue-700 pt-3 mt-3 mb-2">멤버</h3>
                 <div className="space-y-3">
-                    {teamMembers.length > 0 ? teamMembers.map(member => (
-                        <div key={member.id} className="bg-gray-50 dark:bg-jazz-blue-700/50 border border-gray-200 dark:border-jazz-blue-700 p-2 rounded-lg flex items-center cursor-pointer hover:bg-gray-100 dark:hover:bg-jazz-blue-700" onClick={() => onSelectMusician(member)}>
-                            <ProfileAvatar photos={member.photos} name={member.name} className="w-12 h-12 rounded-full object-cover mr-3" textClassName="text-2xl" />
-                            <div>
+                    {(team.members && team.members.length > 0) ? team.members.map(member => {
+                        const musicianProfile = member.musicianId ? allMusicians.find(m => m.id === member.musicianId) : null;
+                        return (
+                        <div key={`${member.name}-${member.instrument}`} 
+                            className={`bg-gray-50 dark:bg-jazz-blue-700/50 border border-gray-200 dark:border-jazz-blue-700 p-2 rounded-lg flex items-center ${musicianProfile ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-jazz-blue-700' : ''}`} 
+                            onClick={() => musicianProfile && onSelectMusician(musicianProfile)}>
+                            <ProfileAvatar 
+                                photos={musicianProfile?.photos} 
+                                name={member.name} 
+                                className="w-12 h-12 rounded-full object-cover mr-3" 
+                                textClassName="text-2xl" 
+                            />
+                            <div className="flex-grow">
                                 <p className="font-bold text-gray-800 dark:text-gray-200">{member.name}</p>
-                                <p className="text-sm text-gray-500 dark:text-jazz-gray-400">{(member.instruments || []).join(', ')}</p>
+                                <p className="text-sm text-gray-500 dark:text-jazz-gray-400">{member.instrument}</p>
                             </div>
+                            {member.isLeader && (
+                                <LeaderIcon className="w-6 h-6 text-jazz-gold-500" filled={true}/>
+                            )}
                         </div>
-                    )) : (
+                    )}) : (
                         <p className="text-sm text-gray-500 dark:text-jazz-gray-400">아직 등록된 멤버가 없습니다.</p>
                     )}
                 </div>

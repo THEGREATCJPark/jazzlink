@@ -1,4 +1,3 @@
-
 import { User, CommunityFeed, Venue, Musician, Team, Performance, Comment } from '../types';
 
 // This mock data is now primarily for reference, as the app will fetch live data from Firebase.
@@ -43,5 +42,9 @@ export const musicians: Musician[] = [
 ];
 
 export const teams: Team[] = [
-  { id: 'team1', teamName: '미드나잇 그루브', teamPhotos: ['https://picsum.photos/seed/t1/400/300'], teamDescription: '서울을 중심으로 활동하는 퓨전 재즈 밴드입니다. 함께 그루브를 만들어갈 멤버를 찾습니다.', members: ['musician1', 'musician2'], ownerUid: 'user1_uid' },
+  // Fix: Updated members from string[] to TeamMember[] to match the type definition.
+  { id: 'team1', teamName: '미드나잇 그루브', teamPhotos: ['https://picsum.photos/seed/t1/400/300'], teamDescription: '서울을 중심으로 활동하는 퓨전 재즈 밴드입니다. 함께 그루브를 만들어갈 멤버를 찾습니다.', members: [
+    { name: '김민준', instrument: '드럼', isLeader: true, musicianId: 'musician1', ownerUid: 'user1_uid' },
+    { name: '이서연', instrument: '피아노', musicianId: 'musician2', ownerUid: 'user2_uid' },
+  ], ownerUid: 'user1_uid' },
 ];
