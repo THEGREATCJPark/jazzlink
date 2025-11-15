@@ -40,6 +40,7 @@ const App: React.FC = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [profileViewTab, setProfileViewTab] = useState<'재즈바' | '연주자' | '연주팀'>('연주자');
+  const [homeViewKey, setHomeViewKey] = useState(0);
 
 
   useEffect(() => {
@@ -62,6 +63,7 @@ const App: React.FC = () => {
     if (view === '홈') {
       setSelectedFeedId(null);
       setIsCreatingPost(false);
+      setHomeViewKey(k => k + 1); // Reset HomeView state
     }
     setCurrentView(view);
   };
@@ -201,6 +203,7 @@ const App: React.FC = () => {
     switch (currentView) {
       case '홈':
         return <HomeView 
+            key={homeViewKey}
             currentUser={currentUser}
             onSelectFeedItem={handleSelectFeedItem}
             fetchFeedTrigger={fetchFeedTrigger}
@@ -237,6 +240,7 @@ const App: React.FC = () => {
                />;
       default:
         return <HomeView 
+            key={homeViewKey}
             currentUser={currentUser} 
             onSelectFeedItem={handleSelectFeedItem}
             fetchFeedTrigger={fetchFeedTrigger}
@@ -324,13 +328,13 @@ const App: React.FC = () => {
        )}
 
       {isBottomNavVisible && currentView === '홈' && (
-         <button onClick={handleNewPostClick} className="absolute bottom-28 right-5 w-14 h-14 bg-jazz-blue-900 dark:bg-jazz-gold-500 rounded-full flex items-center justify-center shadow-lg hover:bg-jazz-blue-800 dark:hover:bg-jazz-gold-600 transition-transform hover:scale-105 z-30">
+         <button onClick={handleNewPostClick} className="absolute bottom-24 right-5 w-14 h-14 bg-jazz-blue-900 dark:bg-jazz-gold-500 rounded-full flex items-center justify-center shadow-lg hover:bg-jazz-blue-800 dark:hover:bg-jazz-gold-600 transition-transform hover:scale-105 z-30">
             <PencilIcon className="w-7 h-7 text-white dark:text-jazz-blue-900" />
          </button>
       )}
       
       {isBottomNavVisible && currentView === '프로필' && profileViewTab === '연주팀' && (
-         <button onClick={() => handleSetView('프로필 생성 (연주팀)')} className="absolute bottom-28 right-5 w-14 h-14 bg-jazz-blue-900 dark:bg-jazz-gold-500 rounded-full flex items-center justify-center shadow-lg hover:bg-jazz-blue-800 dark:hover:bg-jazz-gold-600 transition-transform hover:scale-105 z-30">
+         <button onClick={() => handleSetView('프로필 생성 (연주팀)')} className="absolute bottom-24 right-5 w-14 h-14 bg-jazz-blue-900 dark:bg-jazz-gold-500 rounded-full flex items-center justify-center shadow-lg hover:bg-jazz-blue-800 dark:hover:bg-jazz-gold-600 transition-transform hover:scale-105 z-30">
             <PlusIcon className="w-7 h-7 text-white dark:text-jazz-blue-900" />
          </button>
       )}
