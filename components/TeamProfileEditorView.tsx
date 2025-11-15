@@ -36,6 +36,7 @@ const TeamProfileEditorView: React.FC<TeamProfileEditorViewProps> = ({ currentUs
 
     const [loading, setLoading] = useState(isEditMode);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState('');
 
     const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
@@ -120,7 +121,7 @@ const TeamProfileEditorView: React.FC<TeamProfileEditorViewProps> = ({ currentUs
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!currentUser || !db || !storage) {
-            setError('로그인 정보가 유효하지 않습니다.');
+            setError('사용자 정보가 없거나 데이터베이스에 연결할 수 없습니다.');
             return;
         }
         if (!teamData.teamName?.trim()) {
@@ -132,22 +133,24 @@ const TeamProfileEditorView: React.FC<TeamProfileEditorViewProps> = ({ currentUs
         setError('');
 
         try {
+            setIsUploading(true);
             const photoURLs = await Promise.all(
                 imagePreviews.map(async (preview, index) => {
                     const file = imageFiles[index];
-                    if (file) { // New file to upload
+                    if (file) {
                         const filePath = `team_images/${currentUser.uid}/${Date.now()}_${file.name}`;
                         const storageRef = ref(storage, filePath);
                         const uploadResult = await uploadBytes(storageRef, file);
                         return getDownloadURL(uploadResult.ref);
                     }
-                    return preview; // Existing URL or null
+                    return preview; 
                 })
             );
+            setIsUploading(false);
 
             const finalPhotos = photoURLs.filter((url): url is string => url !== null);
-            if (finalPhotos.length === 0) {
-                const nameForAvatar = teamData.teamName || '?';
+            if (finalPhotos.length === 0 && teamData.teamName) {
+                const nameForAvatar = teamData.teamName;
                 finalPhotos.push(`https://ui-avatars.com/api/?name=${encodeURIComponent(nameForAvatar)}&background=1A263A&color=FFC700&size=400`);
             }
             
@@ -170,11 +173,16 @@ const TeamProfileEditorView: React.FC<TeamProfileEditorViewProps> = ({ currentUs
 
         } catch (err: any) {
             console.error("Error saving team profile:", err);
-            let errorMessage = '프로필 저장에 실패했습니다. 다시 시도해주세요.';
-            if (err.code) {
+            
+            let errorMessage = '프로필 저장 중 알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+            const errStr = (err.message || err.toString() || '').toLowerCase();
+
+            if (errStr.includes('network') || errStr.includes('cors') || err.code === 'storage/unknown') {
+                errorMessage = '이미지 업로드에 실패했습니다. Firebase Storage의 CORS 설정이 올바르게 구성되었는지 확인해주세요. 개발자 콘솔(F12)의 네트워크 탭에서 CORS 관련 오류 메시지를 확인할 수 있습니다.';
+            } else if (err.code) {
                  switch (err.code) {
                     case 'storage/unauthorized':
-                        errorMessage = '이미지 업로드 권한이 없습니다. Firebase Storage의 보안 규칙과 CORS 설정을 확인해주세요. `team_images` 경로에 대한 쓰기 권한이 필요할 수 있습니다.';
+                        errorMessage = '이미지 업로드 권한이 없습니다. Firebase Storage의 보안 규칙을 확인해주세요. `team_images` 경로에 대한 쓰기 권한이 필요합니다.';
                         break;
                     case 'storage/object-not-found':
                     case 'storage/project-not-found':
@@ -182,18 +190,24 @@ const TeamProfileEditorView: React.FC<TeamProfileEditorViewProps> = ({ currentUs
                         errorMessage = '이미지를 저장할 수 없습니다. Firebase 콘솔에서 Storage가 활성화되어 있는지 확인해주세요.';
                         break;
                     default:
-                         errorMessage = `프로필 저장 중 오류가 발생했습니다. 브라우저 개발자 콘솔(F12)을 확인해주세요. (오류 코드: ${err.code})`;
+                         errorMessage = `프로필 저장 중 오류가 발생했습니다: ${err.message} (오류 코드: ${err.code})`;
                 }
+            } else if (err.message) {
+                errorMessage = `프로필 저장 중 오류가 발생했습니다: ${err.message}`;
             }
+            
             setError(errorMessage);
         } finally {
             setIsSubmitting(false);
+            setIsUploading(false);
         }
     };
 
     if (loading) {
         return <div className="p-6 text-center text-gray-500 dark:text-jazz-gray-400">로딩 중...</div>;
     }
+    
+    const isProcessing = isSubmitting || isUploading;
 
     return (
         <div className="bg-white dark:bg-jazz-blue-900 min-h-screen flex flex-col">
@@ -257,8 +271,8 @@ const TeamProfileEditorView: React.FC<TeamProfileEditorViewProps> = ({ currentUs
                     
                     {error && <p className="text-sm text-rose-500 text-center p-3 bg-rose-50 dark:bg-rose-900/20 rounded-md">{error}</p>}
                     
-                    <button type="submit" disabled={isSubmitting} className="w-full bg-jazz-blue-900 text-white font-bold py-3 rounded-lg hover:bg-jazz-blue-800 transition-colors disabled:bg-gray-400 mt-4 dark:bg-jazz-gold-500 dark:text-jazz-blue-900 dark:hover:bg-jazz-gold-600">
-                        {isSubmitting ? '저장 중...' : (isEditMode ? '수정 완료' : '생성 완료')}
+                    <button type="submit" disabled={isProcessing} className="w-full bg-jazz-blue-900 text-white font-bold py-3 rounded-lg hover:bg-jazz-blue-800 transition-colors disabled:bg-gray-400 mt-4 dark:bg-jazz-gold-500 dark:text-jazz-blue-900 dark:hover:bg-jazz-gold-600">
+                        {isUploading ? '이미지 업로드 중...' : isSubmitting ? '저장 중...' : (isEditMode ? '수정 완료' : '생성 완료')}
                     </button>
                 </form>
             </main>
