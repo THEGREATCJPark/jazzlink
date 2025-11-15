@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from 'react';
 import { auth, db, USE_MOCK_DATA } from '../firebase/config';
 import { 
@@ -35,18 +37,29 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
   const [isProcessing, setIsProcessing] = useState(false);
   const [resetMessage, setResetMessage] = useState('');
   const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
+  const [canInstall, setCanInstall] = useState(false);
 
 
   useEffect(() => {
-      const handleBeforeInstallPrompt = (e: Event) => {
-          console.log('beforeinstallprompt event fired');
-          e.preventDefault();
-          setDeferredInstallPrompt(e);
-      };
-      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      return () => {
-          window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      };
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredInstallPrompt(e);
+      setCanInstall(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // FIX: Cast window to any to access non-standard MSStream property.
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+
+    if (isIOS && !isInStandaloneMode) {
+        setCanInstall(true);
+    }
+
+    return () => {
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
   }, []);
 
   useEffect(() => {
@@ -231,18 +244,24 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
   };
   
   const handleInstallClick = async () => {
-      if (!deferredInstallPrompt) {
-          alert("앱을 설치할 수 없습니다. 브라우저가 PWA 설치를 지원하는지 확인해주세요. (예: Chrome, Edge, Safari 모바일)");
-          return;
-      }
-      deferredInstallPrompt.prompt();
-      const { outcome } = await deferredInstallPrompt.userChoice;
-      if (outcome === 'accepted') {
-          console.log('User accepted the install prompt');
-      } else {
-          console.log('User dismissed the install prompt');
-      }
-      setDeferredInstallPrompt(null);
+    // FIX: Cast window to any to access non-standard MSStream property.
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    
+    if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const { outcome } = await deferredInstallPrompt.userChoice;
+        if (outcome === 'accepted') {
+            console.log('User accepted the A2HS prompt');
+            setCanInstall(false);
+        } else {
+            console.log('User dismissed the A2HS prompt');
+        }
+        setDeferredInstallPrompt(null);
+    } else if (isIOS) {
+        alert("iPhone 또는 iPad를 사용하고 계신가요?\n\nSafari 브라우저의 하단 공유(↑) 버튼을 누른 후, '홈 화면에 추가'를 선택하여 Jazzlink를 앱처럼 이용할 수 있습니다.");
+    } else {
+        alert("앱을 설치할 수 없습니다. 사용 중인 브라우저가 PWA 설치를 지원하는지 확인해주세요. (예: Chrome, Edge)");
+    }
   };
 
   if (authLoading) {
@@ -281,7 +300,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
             <a href="https://realbook.site" target="_blank" rel="noopener noreferrer" className="block w-full bg-gray-100 dark:bg-jazz-blue-800 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-jazz-blue-700 transition-colors">
                 리얼북 확인하기
             </a>
-            {deferredInstallPrompt && (
+            {canInstall && (
                 <button onClick={handleInstallClick} className="w-full bg-gray-100 dark:bg-jazz-blue-800 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-jazz-blue-700 transition-colors">
                     앱 설치하기
                 </button>

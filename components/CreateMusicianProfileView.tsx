@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import { db, storage } from '../firebase/config';
 import { collection, addDoc, query, where, getDocs, doc, updateDoc, arrayUnion, getDoc, writeBatch, arrayRemove } from 'firebase/firestore';
@@ -28,20 +29,23 @@ const availableInstruments = [
 ];
 
 const availableTags = [
-    '스탠다드 선호', '모던 선호', '가요 편곡', '자작곡',
-    '즉흥 연주 자신있음', '리딩 가능', '빅밴드 경험',
-    '트리오 선호', '쿼텟 선호', '다양한 장르 가능', '펑키',
-    '라틴', '발라드', '비밥', '하드밥', '스윙'
+    '스탠다드', '모던', '가요', '자작곡',
+    '즉흥 연주', '리딩 가능', '빅밴드 경험',
+    '트리오', '쿼텟', '다양한 장르', '펑키',
+    '라틴', '발라드', '비밥', '하드밥', '스윙',
+    '보사노바', '블루스', '프리재즈', '집시 재즈', '쿨재즈', '소울'
 ];
 
 const TagSelector: React.FC<{
     availableTags: string[],
     selectedTags: string[],
     onTagToggle: (tag: string) => void,
-    title: string
-}> = ({ availableTags, selectedTags, onTagToggle, title }) => (
+    title: string,
+    error?: string,
+}> = ({ availableTags, selectedTags, onTagToggle, title, error }) => (
     <div>
         <h2 className="text-2xl font-bold text-gray-800 mb-2">{title}</h2>
+        {error && <p className="text-rose-500 text-sm mb-2">{error}</p>}
         <div className="flex flex-wrap gap-2">
             {availableTags.map(tag => {
                 const isSelected = selectedTags.includes(tag);
@@ -86,6 +90,7 @@ const CreateMusicianProfileView: React.FC<MusicianProfileEditorProps> = ({ curre
     });
     const [instagramId, setInstagramId] = useState('');
     const [originalTeamId, setOriginalTeamId] = useState<string | undefined>(undefined);
+    const [errors, setErrors] = useState<{[key: string]: string}>({});
     
     // Control state
     const [teams, setTeams] = useState<Team[]>([]);
@@ -94,7 +99,6 @@ const CreateMusicianProfileView: React.FC<MusicianProfileEditorProps> = ({ curre
     const [showTeamCreateModal, setShowTeamCreateModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
-    const [error, setError] = useState('');
     
     // Image upload state
     const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null, null]);
@@ -103,6 +107,13 @@ const CreateMusicianProfileView: React.FC<MusicianProfileEditorProps> = ({ curre
 
     const setFormValue = <K extends keyof Musician>(key: K, value: Musician[K]) => {
       setFormData(prev => ({...prev, [key]: value}));
+      if (errors[key as string]) {
+        setErrors(prev => {
+            const newErrors = {...prev};
+            delete newErrors[key as string];
+            return newErrors;
+        })
+      }
     };
 
     useEffect(() => {
@@ -124,10 +135,10 @@ const CreateMusicianProfileView: React.FC<MusicianProfileEditorProps> = ({ curre
             setImagePreviews([...photos, null, null, null].slice(0, 3));
 
           } else {
-            setError('프로필 정보를 불러올 수 없습니다.');
+            setErrors({ general: '프로필 정보를 불러올 수 없습니다.' });
           }
         } catch (e) {
-          setError('데이터 로딩 중 오류가 발생했습니다.');
+          setErrors({ general: '데이터 로딩 중 오류가 발생했습니다.' });
           console.error(e);
         }
         setLoading(false);
@@ -203,16 +214,16 @@ const CreateMusicianProfileView: React.FC<MusicianProfileEditorProps> = ({ curre
     const handleSubmit = async (e?: React.FormEvent) => {
         e?.preventDefault();
         if (!currentUser || !db || !storage) {
-            setError('사용자 정보가 없거나 데이터베이스에 연결할 수 없습니다.');
+            setErrors({ general: '사용자 정보가 없거나 데이터베이스에 연결할 수 없습니다.' });
             return;
         }
         if (!formData.name?.trim() || (formData.instruments || []).length === 0 || !formData.startYear) {
-            setError('활동명, 연주 악기, 경력 시작 연도는 필수 항목입니다.');
+            setErrors({ general: '활동명, 연주 악기, 경력 시작 연도는 필수 항목입니다.' });
             return;
         }
 
         setIsSubmitting(true);
-        setError('');
+        setErrors({});
 
         try {
             // 1. Upload photos
@@ -269,7 +280,7 @@ const CreateMusicianProfileView: React.FC<MusicianProfileEditorProps> = ({ curre
 
         } catch (e: any) {
             console.error("Error saving musician profile:", e);
-            setError(`프로필 저장 중 오류가 발생했습니다: ${e.message}`);
+            setErrors({ general: `프로필 저장 중 오류가 발생했습니다: ${e.message}` });
         } finally {
             setIsSubmitting(false);
             setIsUploading(false);
@@ -304,6 +315,7 @@ const CreateMusicianProfileView: React.FC<MusicianProfileEditorProps> = ({ curre
                             </div>
                         ))}
                     </div>
+                     <p className="text-xs text-gray-500 mt-2">사진은 1:1 비율로 표시됩니다.</p>
                 </div>
 
                 <div>
@@ -357,7 +369,7 @@ const CreateMusicianProfileView: React.FC<MusicianProfileEditorProps> = ({ curre
                     <textarea id="profile" placeholder="자신을 자유롭게 표현해보세요!" rows={3} value={formData.profile} onChange={(e) => setFormValue('profile', e.target.value)} className="w-full bg-gray-100 border border-gray-300 rounded-md p-3 text-gray-800 focus:ring-jazz-blue-900 focus:border-jazz-blue-900"></textarea>
                 </div>
                 
-                {error && <p className="text-sm text-rose-500">{error}</p>}
+                {errors.general && <p className="text-sm text-rose-500">{errors.general}</p>}
 
                 <button type="submit" disabled={isProcessing} className="w-full bg-jazz-blue-900 text-white font-bold py-3 rounded-md hover:bg-jazz-blue-800 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed mt-6">
                     {isUploading ? '이미지 업로드 중...' : isSubmitting ? '수정 중...' : '프로필 수정하기'}
@@ -370,19 +382,37 @@ const CreateMusicianProfileView: React.FC<MusicianProfileEditorProps> = ({ curre
     }
     
     // RENDER CREATE WIZARD
-    const nextStep = () => setStep(s => Math.min(s + 1, totalSteps));
+    const validateStep = () => {
+        const newErrors: { [key: string]: string } = {};
+        if (step === 1 && !formData.name?.trim()) {
+            newErrors.name = '활동명을 입력해주세요.';
+        }
+        if (step === 2 && (formData.instruments || []).length === 0) {
+            newErrors.instruments = '하나 이상의 악기를 선택해주세요.';
+        }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    }
+
+    const nextStep = () => {
+        if (validateStep()) {
+            setStep(s => Math.min(s + 1, totalSteps));
+        }
+    }
     const prevStep = () => setStep(s => Math.max(s - 1, 1));
     const isLastStep = step === totalSteps;
 
     const wizardHeader = (
         <div className="p-4 flex items-center border-b border-gray-200">
-            <button onClick={step === 1 ? () => setCurrentView('MY') : prevStep} className="p-2 rounded-full hover:bg-gray-100">
+            {/* Fix: Changed 'MY' to a valid ViewType '설정'. */}
+            <button onClick={step === 1 ? () => setCurrentView('설정') : prevStep} className="p-2 rounded-full hover:bg-gray-100">
                 <ChevronLeftIcon className="w-6 h-6 text-gray-600" />
             </button>
             <div className="flex-grow mx-4 h-2 bg-gray-200 rounded-full">
                 <div className="h-2 bg-jazz-blue-900 rounded-full transition-all duration-300" style={{ width: `${(step / totalSteps) * 100}%` }}></div>
             </div>
-            <button onClick={() => setCurrentView('MY')} className="text-sm font-semibold text-gray-600 hover:text-gray-900">나가기</button>
+            {/* Fix: Changed 'MY' to a valid ViewType '설정'. */}
+            <button onClick={() => setCurrentView('설정')} className="text-sm font-semibold text-gray-600 hover:text-gray-900">나가기</button>
         </div>
     );
     
@@ -395,17 +425,19 @@ const CreateMusicianProfileView: React.FC<MusicianProfileEditorProps> = ({ curre
                         <div className="text-center flex flex-col items-center">
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">프로필 사진과 활동명을<br/>설정해주세요.</h2>
                             <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 0)} ref={fileInputRefs[0]} className="hidden" />
-                             <button type="button" onClick={() => fileInputRefs[0].current?.click()} className="w-32 h-32 bg-gray-100 border-2 border-dashed border-gray-300 rounded-full flex items-center justify-center text-gray-400 hover:border-jazz-blue-900 hover:text-jazz-blue-900 transition-colors mb-6">
+                             <button type="button" onClick={() => fileInputRefs[0].current?.click()} className="w-32 h-32 bg-gray-100 border-2 border-dashed border-gray-300 rounded-full flex items-center justify-center text-gray-400 hover:border-jazz-blue-900 hover:text-jazz-blue-900 transition-colors mb-2">
                                 {imagePreviews[0] ? (
                                     <img src={imagePreviews[0]} alt="프로필" className="w-full h-full object-cover rounded-full" />
                                 ) : (
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                                 )}
                             </button>
-                            <input type="text" placeholder="활동명 입력" value={formData.name} onChange={e => setFormValue('name', e.target.value)} className="w-full max-w-sm text-center bg-gray-100 border border-gray-300 rounded-md p-3 text-gray-800 focus:ring-jazz-blue-900 focus:border-jazz-blue-900" />
+                            <p className="text-xs text-gray-500 mb-6">사진은 1:1 비율로 표시됩니다.</p>
+                            <input type="text" placeholder="활동명 입력" value={formData.name} onChange={e => setFormValue('name', e.target.value)} className={`w-full max-w-sm text-center bg-gray-100 border rounded-md p-3 text-gray-800 focus:ring-jazz-blue-900 focus:border-jazz-blue-900 ${errors.name ? 'border-rose-500' : 'border-gray-300'}`} />
+                            {errors.name && <p className="text-rose-500 text-sm mt-1">{errors.name}</p>}
                         </div>
                     )}
-                    {step === 2 && <TagSelector availableTags={availableInstruments} selectedTags={formData.instruments || []} onTagToggle={(tag) => handleTagToggle(tag, 'instrument')} title="연주할 수 있는 악기를 모두 선택해주세요." />}
+                    {step === 2 && <TagSelector availableTags={availableInstruments} selectedTags={formData.instruments || []} onTagToggle={(tag) => handleTagToggle(tag, 'instrument')} title="연주할 수 있는 악기를 모두 선택해주세요." error={errors.instruments} />}
                     {step === 3 && (
                         <div>
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">언제부터 연주를 시작했고,<br/>현재 실력은 어느 정도인가요?</h2>
@@ -467,7 +499,7 @@ const CreateMusicianProfileView: React.FC<MusicianProfileEditorProps> = ({ curre
                 </div>
                 
                 <div className="mt-8">
-                     {error && <p className="text-sm text-rose-500 mb-4 text-center">{error}</p>}
+                     {errors.general && <p className="text-sm text-rose-500 mb-4 text-center">{errors.general}</p>}
                      <button 
                         type="button" 
                         onClick={isLastStep ? () => handleSubmit() : nextStep} 

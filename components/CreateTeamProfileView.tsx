@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef } from 'react';
 import { db, storage } from '../firebase/config';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
@@ -172,6 +173,7 @@ const CreateTeamProfileView: React.FC<CreateTeamProfileViewProps> = ({ currentUs
                                 </div>
                             ))}
                         </div>
+                        <p className="text-xs text-gray-500 mt-2">사진은 1:1 비율로 표시됩니다.</p>
                     </div>
                     <div>
                         <label htmlFor="teamName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">팀 이름</label>

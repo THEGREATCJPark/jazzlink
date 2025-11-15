@@ -1,5 +1,7 @@
 
 
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import { db, storage } from '../firebase/config';
 import { doc, getDoc, updateDoc, collection, getDocs, writeBatch, arrayUnion, arrayRemove } from 'firebase/firestore';
@@ -64,7 +66,8 @@ export const EditGeneralProfileView: React.FC<EditViewProps & { userId: string }
             await updateDoc(doc(db, 'users', userId), { name, photo: newPhotoURL });
 
             alert('프로필이 업데이트되었습니다.');
-            setCurrentView('MY');
+            // Fix: Changed 'MY' to a valid ViewType '설정'.
+            setCurrentView('설정');
         } catch (err: any) {
             console.error("Error updating general profile:", err.message, err.code);
             let errorMessage = '프로필 업데이트에 실패했습니다. 다시 시도해주세요.';
@@ -106,6 +109,7 @@ export const EditGeneralProfileView: React.FC<EditViewProps & { userId: string }
                             이미지 변경
                         </button>
                     </div>
+                    <p className="text-xs text-gray-500 mt-2">사진은 1:1 비율로 표시됩니다.</p>
                 </div>
                 <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">활동명</label>
@@ -252,6 +256,7 @@ export const EditVenueProfileView: React.FC<EditViewProps & { profileId: string 
                             </div>
                         ))}
                     </div>
+                     <p className="text-xs text-gray-500 mt-2">사진은 1:1 비율로 표시됩니다.</p>
                 </div>
                 <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">재즈바 이름</label>

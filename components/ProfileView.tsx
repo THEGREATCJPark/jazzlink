@@ -404,7 +404,7 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
                     {currentUser && (
                         <form onSubmit={handleReviewSubmit} className="bg-gray-100 dark:bg-jazz-blue-700 p-3 rounded-lg mb-4">
                             <div className="flex items-center mb-2">{[1, 2, 3, 4, 5].map(star => <button type="button" key={star} onClick={() => setNewReviewRating(star)}><StarIcon className={`w-6 h-6 transition-colors ${newReviewRating >= star ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'}`} filled={newReviewRating >= star} /></button>)}</div>
-                            <textarea value={newReviewContent} onChange={(e) => setNewReviewContent(e.target.value)} placeholder="연주 경험, 협업 태도 등 후기를 남겨주세요." rows={2} className="w-full bg-white dark:bg-jazz-blue-800 border border-gray-300 dark:border-jazz-blue-600 rounded-md p-2 text-sm text-gray-700 dark:text-gray-200 mb-2" />
+                            <textarea value={newReviewContent} onChange={(e) => setNewReviewContent(e.target.value)} placeholder="연주자의 연주가 어땠는지 적어주세요." rows={2} className="w-full bg-white dark:bg-jazz-blue-800 border border-gray-300 dark:border-jazz-blue-600 rounded-md p-2 text-sm text-gray-700 dark:text-gray-200 mb-2" />
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center">
                                     <label htmlFor="anonymous-toggle-musician" className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">익명으로 등록</label>

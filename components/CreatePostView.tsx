@@ -1,10 +1,12 @@
 
+
 import React, { useState, useRef } from 'react';
 import { db, storage } from '../firebase/config';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { User as FirebaseUser } from 'firebase/auth';
 import { User as UserType } from '../types';
+import ChevronLeftIcon from './icons/ChevronLeftIcon';
 
 interface CreatePostViewProps {
     onClose: () => void;
@@ -95,9 +97,16 @@ const CreatePostView: React.FC<CreatePostViewProps> = ({ onClose, onPostCreated,
 
     return (
         <div className="fixed inset-0 bg-white dark:bg-jazz-blue-900 z-40 flex flex-col">
-            <header className="flex-shrink-0 flex justify-between items-center p-4 border-b border-gray-200 dark:border-jazz-blue-700 h-16">
-                <button onClick={onClose} className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white text-lg">취소</button>
-                <button onClick={handleSubmit} disabled={!canSubmit} className="text-lg font-bold text-jazz-blue-900 dark:text-jazz-gold-500 disabled:text-gray-400 dark:disabled:text-gray-600">등록</button>
+            <header className="flex-shrink-0 flex items-center p-4 border-b border-gray-200 dark:border-jazz-blue-700 h-16">
+                <div className="w-10">
+                    <button onClick={onClose} className="text-jazz-blue-900 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-jazz-blue-800 p-1 -ml-1 rounded-full">
+                         <ChevronLeftIcon className="w-6 h-6" />
+                    </button>
+                </div>
+                <h1 className="text-xl font-bold text-jazz-blue-900 dark:text-white text-center flex-grow truncate">새 게시물 작성</h1>
+                <div className="w-10 flex justify-end">
+                    <button onClick={handleSubmit} disabled={!canSubmit} className="font-bold text-jazz-blue-900 dark:text-jazz-gold-500 disabled:text-gray-400 dark:disabled:text-gray-600">등록</button>
+                </div>
             </header>
 
             <main className="flex-grow p-4 overflow-y-auto">

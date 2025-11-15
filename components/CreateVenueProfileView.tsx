@@ -213,6 +213,7 @@ const CreateVenueProfileView: React.FC<CreateVenueProfileViewProps> = ({ current
                                         </div>
                                     ))}
                                 </div>
+                                <p className="text-xs text-gray-500 mt-2">사진은 1:1 비율로 표시됩니다.</p>
                             </div>
                         </div>
                     )}

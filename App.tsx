@@ -58,6 +58,11 @@ const App: React.FC = () => {
       setCurrentView('설정');
       return;
     }
+    // When navigating to home, clear any detail/creation views
+    if (view === '홈') {
+      setSelectedFeedId(null);
+      setIsCreatingPost(false);
+    }
     setCurrentView(view);
   };
 
@@ -243,6 +248,7 @@ const App: React.FC = () => {
   };
 
   const getHeaderTitle = () => {
+    if (isCreatingPost) return '새 게시물 작성';
     if (selectedFeedId) return '게시물';
     if (currentView === '프로필 수정') return '프로필 수정';
     if (currentView === '프로필 생성') return '연주자 프로필 만들기';
@@ -262,16 +268,18 @@ const App: React.FC = () => {
   }
   
   const isBottomNavVisible = !['프로필 생성', '프로필 수정', '프로필 생성 (재즈바)', '프로필 생성 (연주팀)'].includes(currentView) && !selectedFeedId && !isCreatingPost;
-  const isNavigableBack = ['프로필 수정'].includes(currentView) || !!selectedFeedId;
+  const isNavigableBack = ['프로필 수정'].includes(currentView) || !!selectedFeedId || isCreatingPost;
   const isCreationFlow = ['프로필 생성', '프로필 수정', '프로필 생성 (재즈바)', '프로필 생성 (연주팀)'].includes(currentView) || isCreatingPost;
+  const isHomePage = currentView === '홈' && !selectedFeedId;
+
 
   return (
     <div className="relative max-w-md mx-auto bg-gray-50 dark:bg-jazz-blue-900 text-gray-800 dark:text-gray-200 h-screen font-sans flex flex-col overflow-hidden">
       {!isCreationFlow && (
         <header className="sticky top-0 bg-white/80 dark:bg-jazz-blue-900/80 backdrop-blur-sm z-20 p-4 border-b border-gray-200 dark:border-jazz-blue-700 flex items-center h-16 flex-shrink-0">
-           {currentView === '홈' ? (
+           {isHomePage ? (
              <>
-               <h1 className="text-2xl font-bold text-jazz-blue-900 dark:text-white">Jazzlink</h1>
+               <h1 onClick={() => handleSetView('홈')} className="cursor-pointer text-2xl font-bold text-jazz-blue-900 dark:text-white">Jazzlink</h1>
                <div className="flex-grow" />
                <button onClick={() => setShowSearch(!showSearch)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-jazz-blue-800">
                  <SearchIcon className="w-6 h-6 text-gray-700 dark:text-gray-300" />

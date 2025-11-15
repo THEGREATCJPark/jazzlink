@@ -146,7 +146,7 @@ const CommunityFeedDetailView: React.FC<CommunityFeedDetailViewProps> = ({ feedI
     const hasLiked = currentUser ? feedItem.likedBy.includes(currentUser.uid) : false;
 
     return (
-        <div className="animate-fade-in bg-white dark:bg-jazz-blue-800 min-h-screen">
+        <div className="animate-fade-in bg-white dark:bg-jazz-blue-800">
             <div className="p-4 border-b border-gray-200 dark:border-jazz-blue-700">
                 <button onClick={() => onViewUserProfile(feedItem.authorUid)} className="flex items-center mb-4 text-left w-full rounded-md hover:bg-gray-100 dark:hover:bg-jazz-blue-700 p-1 -ml-1">
                     <img src={feedItem.authorPhoto || `https://ui-avatars.com/api/?name=${feedItem.authorName}&background=1A263A&color=FFC700`} alt={feedItem.authorName || ''} className="w-10 h-10 rounded-full mr-3" />
@@ -198,7 +198,7 @@ const CommunityFeedDetailView: React.FC<CommunityFeedDetailViewProps> = ({ feedI
                 </div>
             </div>
             
-            <div className="sticky bottom-20 sm:bottom-0 left-0 right-0 p-4 bg-white dark:bg-jazz-blue-800 border-t border-gray-200 dark:border-jazz-blue-700 max-w-md mx-auto">
+            <div className="sticky bottom-0 left-0 right-0 p-4 bg-white dark:bg-jazz-blue-800 border-t border-gray-200 dark:border-jazz-blue-700 max-w-md mx-auto">
                 {currentUser ? (
                     <form onSubmit={handleCommentSubmit} className="flex items-center space-x-2">
                         <input 
@@ -208,7 +208,7 @@ const CommunityFeedDetailView: React.FC<CommunityFeedDetailViewProps> = ({ feedI
                             placeholder="댓글을 입력하세요..."
                             className="w-full bg-gray-100 dark:bg-jazz-blue-700 border border-gray-300 dark:border-jazz-blue-600 rounded-full py-2 px-4 text-sm text-gray-700 dark:text-gray-200 focus:ring-jazz-blue-900 focus:border-jazz-blue-900"
                         />
-                        <button type="submit" disabled={isSubmitting || !newComment.trim()} className="bg-jazz-blue-900 text-white font-bold py-2 px-4 rounded-full text-sm hover:bg-jazz-blue-800 disabled:bg-gray-400">
+                        <button type="submit" disabled={isSubmitting || !newComment.trim()} className="bg-jazz-blue-900 text-white font-bold py-2 px-4 rounded-lg text-sm hover:bg-jazz-blue-800 disabled:bg-gray-400 whitespace-nowrap">
                             {isSubmitting ? '...' : '등록'}
                         </button>
                     </form>
