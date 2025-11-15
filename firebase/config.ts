@@ -10,7 +10,7 @@ export const firebaseConfig = {
   apiKey: "AIzaSyCHho2lTCw5DUNPdaieHF-OJWGXNocom58",
   authDomain: "jazzlink.kr",
   projectId: "jazzlink-eb611",
-  storageBucket: "jazzlink-eb611.appspot.com",
+  storageBucket: "jazzlink-eb611.firebasestorage.app",
   messagingSenderId: "597781140601",
   appId: "1:597781140601:web:b8e007f71d0078391b30a8",
   measurementId: "G-KYKWMKGVJH"
