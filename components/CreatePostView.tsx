@@ -1,9 +1,9 @@
 
 
+
 import React, { useState, useRef } from 'react';
-import { db, storage } from '../firebase/config';
+import { db, storage, ref, uploadBytes, getDownloadURL } from '../firebase/config';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { User as FirebaseUser } from 'firebase/auth';
 import { User as UserType } from '../types';
 import ChevronLeftIcon from './icons/ChevronLeftIcon';

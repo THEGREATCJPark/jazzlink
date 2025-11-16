@@ -1,3 +1,4 @@
+
 import { User, CommunityFeed, Venue, Musician, Team, Performance, Comment } from '../types';
 
 // This mock data is now primarily for reference, as the app will fetch live data from Firebase.
@@ -24,16 +25,18 @@ export const comments: { [key: string]: Comment[] } = {
 
 
 export const performances: Performance[] = [
-    { id: 'p1', venueId: 'venue2', title: '이서연 트리오', dateTime: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString() },
-    { id: 'p2', venueId: 'venue1', title: '김민준 퀄텟', dateTime: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString() },
+    { id: 'p1', venueId: 'ChIJxbxyTQqifDUR1F3z17j8384', title: '이서연 트리오', dateTime: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString() },
+    { id: 'p2', venueId: 'ChIJHZ_zRQyfezURz5RQuvYk-A0', title: '김민준 퀄텟', dateTime: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString() },
+    { id: 'p3', venueId: 'ChIJ-0tC8YCkfDURMvK4tJ4v-c4', title: '스페셜 잼데이', dateTime: new Date(new Date().setDate(new Date().getDate() + 3)).toISOString() },
+    { id: 'p4', venueId: 'ChIJwdwN6ymlfDURdQ4yJ9k-TNM', title: '박하은 보컬 나잇', dateTime: new Date(new Date().setDate(new Date().getDate() + 4)).toISOString() },
 ];
 
 
 export const venues: Venue[] = [
-  // Fix: Renamed googleMapsUrl to naverMapsUrl and added operatingHours to match the Venue type.
-  { id: 'venue1', name: '블루 노트 서울', address: '서울시 강남구', photos: ['https://picsum.photos/seed/venue1/400/300', 'https://picsum.photos/seed/venue1_2/400/300'], description: '정통 뉴욕 재즈의 감성을 느낄 수 있는 공간입니다.', tagsVenue: ['스탠다드', '비밥', '라이브'], ownerUid: 'owner1_uid', coordinates: { lat: 37.5240, lng: 127.0276 }, naverMapsUrl: 'https://maps.app.goo.gl/example1', instagramUrl: 'https://instagram.com/bluenote', operatingHours: '매일 18:00 - 02:00', schedule: [] },
-  // Fix: Renamed googleMapsUrl to naverMapsUrl and added operatingHours to match the Venue type.
-  { id: 'venue2', name: '올댓재즈', address: '서울시 이태원', photos: ['https://picsum.photos/seed/venue2/400/300'], description: '한국 재즈의 역사가 살아숨쉬는 곳, 올댓재즈입니다.', tagsVenue: ['라이브', '칵테일', '분위기 좋은'], ownerUid: 'owner2_uid', coordinates: { lat: 37.5401, lng: 126.9946 }, naverMapsUrl: 'https://maps.app.goo.gl/allthatjazz', instagramUrl: 'https://instagram.com/allthatjazz', operatingHours: '매일 18:00 - 02:00', schedule: [] },
+  { id: 'ChIJHZ_zRQyfezURz5RQuvYk-A0', name: 'Flat Nine', address: '서울 서초구 강남대로65길 10 5층', photos: ['https://picsum.photos/seed/venue_flatnine/400/300'], description: '강남역에 위치한 모던하고 세련된 분위기의 재즈바. 수준 높은 라이브 연주를 가까이에서 즐길 수 있습니다.', tagsVenue: ['라이브', '칵테일', '강남역'], ownerUid: 'owner1_uid', coordinates: { lat: 37.5002, lng: 127.0271 }, naverMapsUrl: 'https://map.naver.com/p/entry/place/1316823377', instagramUrl: 'https://www.instagram.com/flatnine.official', operatingHours: '매일 19:00 - 01:00', googlePlaceId: 'ChIJHZ_zRQyfezURz5RQuvYk-A0', googleOpeningHours: {} },
+  { id: 'ChIJxbxyTQqifDUR1F3z17j8384', name: 'Club Evans', address: '서울 마포구 와우산로 63', photos: ['https://picsum.photos/seed/venue_evans/400/300'], description: '홍대에 위치한 재즈 클럽으로, 실력 있는 뮤지션들의 잼세션이 유명합니다.', tagsVenue: ['잼세션', '라이브', '홍대'], ownerUid: 'owner2_uid', coordinates: { lat: 37.5517, lng: 126.9234 }, naverMapsUrl: 'https://map.naver.com/p/entry/place/11579213', instagramUrl: 'https://instagram.com/club_evans', operatingHours: '매일 19:30 - 24:00', googlePlaceId: 'ChIJxbxyTQqifDUR1F3z17j8384', googleOpeningHours: {} },
+  { id: 'ChIJ-0tC8YCkfDURMvK4tJ4v-c4', name: 'All That Jazz', address: '서울 용산구 이태원로27가길 12', photos: ['https://picsum.photos/seed/venue_allthatjazz/400/300'], description: '1976년에 오픈한 한국 최초의 재즈 클럽. 이태원의 자유로운 분위기를 느낄 수 있습니다.', tagsVenue: ['역사적인', '이태원', '라이브'], ownerUid: 'owner3_uid', coordinates: { lat: 37.5348, lng: 126.9944 }, naverMapsUrl: 'https://map.naver.com/p/entry/place/11543232', instagramUrl: 'https://instagram.com/allthatjazz_itaewon', operatingHours: '월-목 18:00 - 23:00, 금-일 18:00 - 24:00', googlePlaceId: 'ChIJ-0tC8YCkfDURMvK4tJ4v-c4', googleOpeningHours: {} },
+  { id: 'ChIJwdwN6ymlfDURdQ4yJ9k-TNM', name: 'Diva Janus', address: '서울 서초구 서초대로42길 19', photos: ['https://picsum.photos/seed/venue_janus/400/300'], description: '교대역 근처에 위치한 재즈 클럽으로, 편안한 분위기에서 공연을 즐길 수 있습니다.', tagsVenue: ['스탠다드', '보컬', '아늑한'], ownerUid: 'owner4_uid', coordinates: { lat: 37.4906, lng: 127.0094 }, naverMapsUrl: 'https://map.naver.com/p/entry/place/13352276', instagramUrl: 'https://instagram.com/divajanus', operatingHours: '매일 19:00 - 24:00', googlePlaceId: 'ChIJwdwN6ymlfDURdQ4yJ9k-TNM', googleOpeningHours: {} },
 ];
 
 export const musicians: Musician[] = [
@@ -42,7 +45,6 @@ export const musicians: Musician[] = [
 ];
 
 export const teams: Team[] = [
-  // Fix: Updated members from string[] to TeamMember[] to match the type definition.
   { id: 'team1', teamName: '미드나잇 그루브', teamPhotos: ['https://picsum.photos/seed/t1/400/300'], teamDescription: '서울을 중심으로 활동하는 퓨전 재즈 밴드입니다. 함께 그루브를 만들어갈 멤버를 찾습니다.', members: [
     { name: '김민준', instrument: '드럼', isLeader: true, musicianId: 'musician1', ownerUid: 'user1_uid' },
     { name: '이서연', instrument: '피아노', musicianId: 'musician2', ownerUid: 'user2_uid' },

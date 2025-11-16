@@ -1,4 +1,7 @@
 
+
+
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { db, USE_MOCK_DATA } from '../firebase/config';
 import { collection, getDocs, doc, getDoc, query, orderBy, runTransaction, Timestamp } from 'firebase/firestore';
@@ -137,8 +140,19 @@ const VenueDetailModal: React.FC<{ venue: Venue; onClose: () => void; currentUse
                         const userPromises = usersToFetch.map(uid => getDoc(doc(db, 'users', uid)));
                         const userDocs = await Promise.all(userPromises);
                         const newUsers = new Map(usersData);
+                        // Fix: Replaced object spread with explicit property assignment for type safety.
                         userDocs.forEach(userDoc => {
-                            if (userDoc.exists()) newUsers.set(userDoc.id, { uid: userDoc.id, ...userDoc.data() } as User);
+                            if (userDoc.exists()) {
+                                const data = userDoc.data();
+                                newUsers.set(userDoc.id, {
+                                    uid: userDoc.id,
+                                    // FIX: Explicitly cast properties from Firestore data to match the User type.
+                                    name: data.name as string | null,
+                                    photo: data.photo as string | null,
+                                    email: data.email as string | null,
+                                    accountType: data.accountType as User['accountType']
+                                });
+                            }
                         });
                         setUsersData(newUsers);
                     }
@@ -310,8 +324,19 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
                         const userPromises = usersToFetch.map(uid => getDoc(doc(db, 'users', uid)));
                         const userDocs = await Promise.all(userPromises);
                         const newUsers = new Map(usersData);
+                        // Fix: Replaced object spread with explicit property assignment for type safety.
                         userDocs.forEach(userDoc => {
-                            if (userDoc.exists()) newUsers.set(userDoc.id, { uid: userDoc.id, ...userDoc.data() } as User);
+                            if (userDoc.exists()) {
+                                const data = userDoc.data();
+                                newUsers.set(userDoc.id, {
+                                    uid: userDoc.id,
+                                    // FIX: Explicitly cast properties from Firestore data to match the User type.
+                                    name: data.name as string | null,
+                                    photo: data.photo as string | null,
+                                    email: data.email as string | null,
+                                    accountType: data.accountType as User['accountType']
+                                });
+                            }
                         });
                         setUsersData(newUsers);
                     }
@@ -481,8 +506,19 @@ const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelect
                         const userPromises = usersToFetch.map(uid => getDoc(doc(db, 'users', uid)));
                         const userDocs = await Promise.all(userPromises);
                         const newUsers = new Map(usersData);
+                        // Fix: Replaced object spread with explicit property assignment for type safety.
                         userDocs.forEach(userDoc => {
-                            if (userDoc.exists()) newUsers.set(userDoc.id, { uid: userDoc.id, ...userDoc.data() } as User);
+                            if (userDoc.exists()) {
+                                const data = userDoc.data();
+                                newUsers.set(userDoc.id, {
+                                    uid: userDoc.id,
+                                    // FIX: Explicitly cast properties from Firestore data to match the User type.
+                                    name: data.name as string | null,
+                                    photo: data.photo as string | null,
+                                    email: data.email as string | null,
+                                    accountType: data.accountType as User['accountType']
+                                });
+                            }
                         });
                         setUsersData(newUsers);
                     }

@@ -2,13 +2,14 @@
 
 
 
+
+
 import React, { useState, useEffect, useRef } from 'react';
-import { db, storage } from '../firebase/config';
+import { db, storage, ref, uploadBytes, getDownloadURL } from '../firebase/config';
 import { doc, getDoc, updateDoc, collection, getDocs, writeBatch, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { User as FirebaseUser, updateProfile } from 'firebase/auth';
 import { ViewType, Musician, Venue, User as UserType, Team } from '../types';
 import CreateTeamModal from './CreateTeamModal';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 
 interface EditViewProps {

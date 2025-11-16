@@ -37,25 +37,15 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
   const [isProcessing, setIsProcessing] = useState(false);
   const [resetMessage, setResetMessage] = useState('');
   const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
-  const [canInstall, setCanInstall] = useState(false);
 
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredInstallPrompt(e);
-      setCanInstall(true);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    // FIX: Cast window to any to access non-standard MSStream property.
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
-
-    if (isIOS && !isInStandaloneMode) {
-        setCanInstall(true);
-    }
 
     return () => {
         window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -244,23 +234,22 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
   };
   
   const handleInstallClick = async () => {
-    // FIX: Cast window to any to access non-standard MSStream property.
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+
+    if (isInStandaloneMode) {
+        alert('앱이 이미 설치되어 있습니다.');
+        return;
+    }
     
     if (deferredInstallPrompt) {
         deferredInstallPrompt.prompt();
-        const { outcome } = await deferredInstallPrompt.userChoice;
-        if (outcome === 'accepted') {
-            console.log('User accepted the A2HS prompt');
-            setCanInstall(false);
-        } else {
-            console.log('User dismissed the A2HS prompt');
-        }
+        await deferredInstallPrompt.userChoice;
         setDeferredInstallPrompt(null);
     } else if (isIOS) {
         alert("iPhone 또는 iPad를 사용하고 계신가요?\n\nSafari 브라우저의 하단 공유(↑) 버튼을 누른 후, '홈 화면에 추가'를 선택하여 Jazzlink를 앱처럼 이용할 수 있습니다.");
     } else {
-        alert("앱을 설치할 수 없습니다. 사용 중인 브라우저가 PWA 설치를 지원하는지 확인해주세요. (예: Chrome, Edge)");
+        alert("브라우저 메뉴(⋮ 또는 ≡)에서 '홈 화면에 추가' 또는 '앱 설치'를 선택하여 Jazzlink를 설치할 수 있습니다.");
     }
   };
 
@@ -300,11 +289,9 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
             <a href="https://realbook.site" target="_blank" rel="noopener noreferrer" className="block w-full bg-gray-100 dark:bg-jazz-blue-800 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-jazz-blue-700 transition-colors">
                 리얼북 확인하기
             </a>
-            {canInstall && (
-                <button onClick={handleInstallClick} className="w-full bg-gray-100 dark:bg-jazz-blue-800 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-jazz-blue-700 transition-colors">
-                    앱 설치하기
-                </button>
-            )}
+            <button onClick={handleInstallClick} className="w-full bg-gray-100 dark:bg-jazz-blue-800 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-jazz-blue-700 transition-colors">
+                앱 설치하기
+            </button>
             <button 
                 onClick={handleLogout}
                 className="w-full bg-rose-600 text-white font-bold py-3 rounded-lg hover:bg-rose-700 transition-colors"

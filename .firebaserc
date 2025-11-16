@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "notebook": "jazzlink-eb611",
+    "default": "jazzlink-eb611"
+  },
+  "targets": {},
+  "etags": {}
+}

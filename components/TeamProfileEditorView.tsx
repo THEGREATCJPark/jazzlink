@@ -1,7 +1,8 @@
+
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { db, storage } from '../firebase/config';
-import { collection, addDoc, doc, getDoc, updateDoc, getDocs } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage, ref, uploadBytes, getDownloadURL } from '../firebase/config';
+import { collection, addDoc, doc, getDoc, updateDoc, getDocs, query, where } from 'firebase/firestore';
 import { User as FirebaseUser } from 'firebase/auth';
 import { ViewType, Team, TeamMember, Musician } from '../types';
 import ChevronLeftIcon from './icons/ChevronLeftIcon';
@@ -80,6 +81,39 @@ const TeamProfileEditorView: React.FC<TeamProfileEditorViewProps> = ({ currentUs
         fetchAllMusicians();
         fetchTeamData();
     }, [isEditMode, profileId]);
+
+    useEffect(() => {
+        const bootstrapTeamCreator = async () => {
+            if (!isEditMode && currentUser && db && members.length === 0) {
+                // Find user's musician profile
+                const musiciansRef = collection(db, 'musicians');
+                const q = query(musiciansRef, where("ownerUid", "==", currentUser.uid));
+                const querySnapshot = await getDocs(q);
+
+                let firstMember: TeamMember;
+
+                if (!querySnapshot.empty) {
+                    const musicianProfile = { id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() } as Musician;
+                    firstMember = {
+                        name: musicianProfile.name,
+                        instrument: (musicianProfile.instruments && musicianProfile.instruments[0]) || '악기',
+                        isLeader: true,
+                        musicianId: musicianProfile.id,
+                        ownerUid: currentUser.uid,
+                    };
+                } else {
+                    firstMember = {
+                        name: currentUser.displayName || '리더',
+                        instrument: '악기',
+                        isLeader: true,
+                        ownerUid: currentUser.uid,
+                    };
+                }
+                setMembers([firstMember]);
+            }
+        };
+        bootstrapTeamCreator();
+    }, [isEditMode, currentUser, db, members.length]);
 
     const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;

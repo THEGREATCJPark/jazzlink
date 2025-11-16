@@ -1,9 +1,13 @@
 
 
+
+
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
+// Fix: Centralize storage imports to resolve potential module resolution issues.
+// FIX: Use a namespace import for firebase/storage to avoid module resolution errors.
+import * as storageFunctions from 'firebase/storage';
 
 // Updated with your Firebase project configuration
 export const firebaseConfig = {
@@ -35,4 +39,10 @@ const app = USE_MOCK_DATA ? null : initializeApp(firebaseConfig);
 
 export const auth = app ? getAuth(app) : null;
 export const db = app ? getFirestore(app) : null;
-export const storage = app ? getStorage(app) : null;
+// FIX: Initialize storage using the function from the namespace import.
+export const storage = app ? storageFunctions.getStorage(app) : null;
+
+// Fix: Export storage functions from here to be used across the app.
+// FIX: Destructure and export functions from the namespace import.
+const { ref, uploadBytes, getDownloadURL } = storageFunctions;
+export { ref, uploadBytes, getDownloadURL };

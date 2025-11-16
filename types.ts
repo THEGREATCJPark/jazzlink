@@ -41,11 +41,12 @@ export interface Venue {
   naverMapsUrl: string;
   instagramUrl: string;
   operatingHours: string;
-  // Fix: Added optional youtubeUrl to Venue interface.
   youtubeUrl?: string;
   schedule?: Performance[];
   totalRating?: number;
   ratingCount?: number;
+  googlePlaceId?: string;
+  googleOpeningHours?: any;
 }
 
 export interface Musician {
