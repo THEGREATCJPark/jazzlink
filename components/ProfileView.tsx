@@ -1,7 +1,6 @@
 
 
 
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { db, USE_MOCK_DATA } from '../firebase/config';
 import { collection, getDocs, doc, getDoc, query, orderBy, runTransaction, Timestamp } from 'firebase/firestore';
@@ -140,17 +139,17 @@ const VenueDetailModal: React.FC<{ venue: Venue; onClose: () => void; currentUse
                         const userPromises = usersToFetch.map(uid => getDoc(doc(db, 'users', uid)));
                         const userDocs = await Promise.all(userPromises);
                         const newUsers = new Map(usersData);
-                        // Fix: Replaced object spread with explicit property assignment for type safety.
+                        // FIX: Safely assign properties from Firestore data to the User type by checking their types.
                         userDocs.forEach(userDoc => {
                             if (userDoc.exists()) {
                                 const data = userDoc.data();
+                                const accountTypeVal = data.accountType;
                                 newUsers.set(userDoc.id, {
                                     uid: userDoc.id,
-                                    // FIX: Explicitly cast properties from Firestore data to match the User type.
-                                    name: data.name as string | null,
-                                    photo: data.photo as string | null,
-                                    email: data.email as string | null,
-                                    accountType: data.accountType as User['accountType']
+                                    name: typeof data.name === 'string' ? data.name : null,
+                                    photo: typeof data.photo === 'string' ? data.photo : null,
+                                    email: typeof data.email === 'string' ? data.email : null,
+                                    accountType: (accountTypeVal === 'musician' || accountTypeVal === 'venue_owner' || accountTypeVal === 'general') ? accountTypeVal : undefined
                                 });
                             }
                         });
@@ -161,7 +160,7 @@ const VenueDetailModal: React.FC<{ venue: Venue; onClose: () => void; currentUse
             setReviewsLoading(false);
         };
         fetchReviews();
-    }, [venue.id]);
+    }, [venue.id, usersData]);
 
     const handleReviewSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -324,17 +323,17 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
                         const userPromises = usersToFetch.map(uid => getDoc(doc(db, 'users', uid)));
                         const userDocs = await Promise.all(userPromises);
                         const newUsers = new Map(usersData);
-                        // Fix: Replaced object spread with explicit property assignment for type safety.
+                        // FIX: Safely assign properties from Firestore data to the User type by checking their types.
                         userDocs.forEach(userDoc => {
                             if (userDoc.exists()) {
                                 const data = userDoc.data();
+                                const accountTypeVal = data.accountType;
                                 newUsers.set(userDoc.id, {
                                     uid: userDoc.id,
-                                    // FIX: Explicitly cast properties from Firestore data to match the User type.
-                                    name: data.name as string | null,
-                                    photo: data.photo as string | null,
-                                    email: data.email as string | null,
-                                    accountType: data.accountType as User['accountType']
+                                    name: typeof data.name === 'string' ? data.name : null,
+                                    photo: typeof data.photo === 'string' ? data.photo : null,
+                                    email: typeof data.email === 'string' ? data.email : null,
+                                    accountType: (accountTypeVal === 'musician' || accountTypeVal === 'venue_owner' || accountTypeVal === 'general') ? accountTypeVal : undefined
                                 });
                             }
                         });
@@ -345,7 +344,7 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
             setReviewsLoading(false);
         };
         fetchReviews();
-    }, [musician.id]);
+    }, [musician.id, usersData]);
 
     const handleReviewSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -506,17 +505,17 @@ const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelect
                         const userPromises = usersToFetch.map(uid => getDoc(doc(db, 'users', uid)));
                         const userDocs = await Promise.all(userPromises);
                         const newUsers = new Map(usersData);
-                        // Fix: Replaced object spread with explicit property assignment for type safety.
+                        // FIX: Safely assign properties from Firestore data to the User type by checking their types.
                         userDocs.forEach(userDoc => {
                             if (userDoc.exists()) {
                                 const data = userDoc.data();
+                                const accountTypeVal = data.accountType;
                                 newUsers.set(userDoc.id, {
                                     uid: userDoc.id,
-                                    // FIX: Explicitly cast properties from Firestore data to match the User type.
-                                    name: data.name as string | null,
-                                    photo: data.photo as string | null,
-                                    email: data.email as string | null,
-                                    accountType: data.accountType as User['accountType']
+                                    name: typeof data.name === 'string' ? data.name : null,
+                                    photo: typeof data.photo === 'string' ? data.photo : null,
+                                    email: typeof data.email === 'string' ? data.email : null,
+                                    accountType: (accountTypeVal === 'musician' || accountTypeVal === 'venue_owner' || accountTypeVal === 'general') ? accountTypeVal : undefined
                                 });
                             }
                         });
@@ -527,7 +526,7 @@ const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelect
             setReviewsLoading(false);
         };
         fetchReviews();
-    }, [team.id]);
+    }, [team.id, usersData]);
 
     const handleReviewSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

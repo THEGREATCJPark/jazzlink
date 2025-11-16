@@ -2,19 +2,20 @@
 
 
 
+
+
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-// Fix: Centralize storage imports to resolve potential module resolution issues.
-// FIX: Use a namespace import for firebase/storage to avoid module resolution errors.
-import * as storageFunctions from 'firebase/storage';
+// FIX: Use named imports for Firebase Storage functions, not a namespace import.
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 // Updated with your Firebase project configuration
 export const firebaseConfig = {
   apiKey: "AIzaSyCHho2lTCw5DUNPdaieHF-OJWGXNocom58",
   authDomain: "jazzlink.kr",
   projectId: "jazzlink-eb611",
-  storageBucket: "jazzlink-eb611.firebasestorage.app",
+  storageBucket: "jazzlink-eb611.appspot.com",
   messagingSenderId: "597781140601",
   appId: "1:597781140601:web:b8e007f71d0078391b30a8",
   measurementId: "G-KYKWMKGVJH"
@@ -39,10 +40,8 @@ const app = USE_MOCK_DATA ? null : initializeApp(firebaseConfig);
 
 export const auth = app ? getAuth(app) : null;
 export const db = app ? getFirestore(app) : null;
-// FIX: Initialize storage using the function from the namespace import.
-export const storage = app ? storageFunctions.getStorage(app) : null;
+// FIX: Initialize storage using the named import 'getStorage'.
+export const storage = app ? getStorage(app) : null;
 
-// Fix: Export storage functions from here to be used across the app.
-// FIX: Destructure and export functions from the namespace import.
-const { ref, uploadBytes, getDownloadURL } = storageFunctions;
+// FIX: Export the named imports directly so other files can use them.
 export { ref, uploadBytes, getDownloadURL };

@@ -21,6 +21,7 @@ import CreateVenueProfileView from './components/CreateVenueProfileView';
 import TeamProfileEditorView from './components/TeamProfileEditorView';
 import SearchIcon from './components/icons/SearchIcon';
 import PlusIcon from './components/icons/PlusIcon';
+import AdminPage from './components/AdminPage';
 
 
 const App: React.FC = () => {
@@ -53,6 +54,13 @@ const App: React.FC = () => {
     }
     localStorage.setItem('theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('view') === 'admin') {
+          setCurrentView('어드민');
+      }
+  }, []);
   
   const handleSetView = (view: ViewType) => {
     if (!currentUser && (view === '일정' || view === '프로필' || view === '프로필 생성 (연주팀)')) {
@@ -239,6 +247,8 @@ const App: React.FC = () => {
                   toggleTheme={toggleTheme}
                   theme={theme}
                />;
+      case '어드민':
+        return <AdminPage />;
       default:
         return <HomeView 
             key={homeViewKey}
@@ -259,6 +269,7 @@ const App: React.FC = () => {
     if (currentView === '프로필 생성') return '연주자 프로필 만들기';
     if (currentView === '프로필 생성 (재즈바)') return '재즈바 프로필 만들기';
     if (currentView === '프로필 생성 (연주팀)') return '연주팀 프로필 만들기';
+    if (currentView === '어드민') return 'Admin Dashboard';
 
     return currentView;
   };
@@ -272,15 +283,16 @@ const App: React.FC = () => {
       setIsCreatingPost(true);
   }
   
-  const isBottomNavVisible = !['프로필 생성', '프로필 수정', '프로필 생성 (재즈바)', '프로필 생성 (연주팀)'].includes(currentView) && !selectedFeedId && !isCreatingPost;
-  const isNavigableBack = ['프로필 수정'].includes(currentView) || !!selectedFeedId || isCreatingPost;
+  const isAdminView = currentView === '어드민';
   const isCreationFlow = ['프로필 생성', '프로필 수정', '프로필 생성 (재즈바)', '프로필 생성 (연주팀)'].includes(currentView) || isCreatingPost;
+  const isBottomNavVisible = !isCreationFlow && !selectedFeedId && !isAdminView;
+  const isNavigableBack = ['프로필 수정'].includes(currentView) || !!selectedFeedId || isCreatingPost;
   const isHomePage = currentView === '홈' && !selectedFeedId;
 
 
   return (
     <div className="relative max-w-md mx-auto bg-gray-50 dark:bg-jazz-blue-900 text-gray-800 dark:text-gray-200 h-screen font-sans flex flex-col overflow-hidden">
-      {!isCreationFlow && (
+      {!isCreationFlow && !isAdminView && (
         <header className="sticky top-0 bg-white/80 dark:bg-jazz-blue-900/80 backdrop-blur-sm z-20 p-4 border-b border-gray-200 dark:border-jazz-blue-700 flex items-center h-16 flex-shrink-0">
            {isHomePage ? (
              <>

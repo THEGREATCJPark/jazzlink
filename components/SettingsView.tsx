@@ -88,7 +88,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
         }
     };
     fetchContentProfile();
-  }, [currentUser, currentUserProfile]);
+  }, [currentUser?.uid, currentUserProfile]);
 
   const handleEditProfile = () => {
     if (!currentUser || !currentUserProfile) return;

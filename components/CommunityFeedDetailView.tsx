@@ -93,7 +93,7 @@ const CommunityFeedDetailView: React.FC<CommunityFeedDetailViewProps> = ({ feedI
         };
 
         recordViewAndFetchData();
-    }, [fetchAllData, feedId, currentUser]);
+    }, [fetchAllData, feedId, currentUser?.uid]);
 
 
     const handleLike = async () => {
