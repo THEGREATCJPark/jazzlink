@@ -1,4 +1,5 @@
 
+
 export interface User {
   uid: string;
   name: string | null;
@@ -42,6 +43,7 @@ export interface Venue {
   instagramUrl: string;
   operatingHours: string;
   youtubeUrl?: string;
+  websiteUrl?: string;
   schedule?: Performance[];
   totalRating?: number;
   ratingCount?: number;

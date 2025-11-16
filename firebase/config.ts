@@ -1,13 +1,8 @@
 
-
-
-
-
-
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-// FIX: Use named imports for Firebase Storage functions, not a namespace import.
+// FIX: Corrected Firebase Storage function imports to resolve module export errors.
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 // Updated with your Firebase project configuration
@@ -40,8 +35,6 @@ const app = USE_MOCK_DATA ? null : initializeApp(firebaseConfig);
 
 export const auth = app ? getAuth(app) : null;
 export const db = app ? getFirestore(app) : null;
-// FIX: Initialize storage using the named import 'getStorage'.
 export const storage = app ? getStorage(app) : null;
 
-// FIX: Export the named imports directly so other files can use them.
 export { ref, uploadBytes, getDownloadURL };

@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect } from 'react';
 import { auth, db, USE_MOCK_DATA } from '../firebase/config';
 import { 
@@ -15,6 +16,73 @@ import {
 import { doc, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
 import GoogleIcon from './icons/GoogleIcon';
 import { User as UserType } from '../types';
+
+const InstallInstructionsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+    const modalStyle: React.CSSProperties = {
+        position: 'fixed',
+        inset: '0',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 50,
+        animation: 'fadeIn 0.2s ease-out'
+    };
+    const contentStyle: React.CSSProperties = {
+        backgroundColor: 'white',
+        padding: '2rem',
+        borderRadius: '0.5rem',
+        maxWidth: '90%',
+        width: '400px',
+        color: '#333'
+    };
+    const placeholderStyle: React.CSSProperties = {
+        height: '150px',
+        backgroundColor: '#e0e0e0',
+        borderRadius: '0.5rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#757575',
+        fontStyle: 'italic',
+        margin: '0.5rem 0 1rem'
+    };
+
+    return (
+        <div style={modalStyle} onClick={onClose}>
+            <div style={contentStyle} onClick={(e) => e.stopPropagation()}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>앱 설치 안내</h3>
+                
+                <div>
+                    <h4 style={{ fontWeight: 'bold' }}>Android 사용자</h4>
+                    <div style={placeholderStyle}>
+                        <span>(안드로이드 설치 안내 스크린샷)</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style={{ fontWeight: 'bold' }}>iPhone 사용자</h4>
+                     <div style={placeholderStyle}>
+                        <span>(아이폰 설치 안내 스크린샷)</span>
+                    </div>
+                </div>
+                
+                <button 
+                    onClick={onClose} 
+                    style={{ width: '100%', padding: '0.75rem', border: 'none', borderRadius: '0.375rem', backgroundColor: '#333', color: 'white', cursor: 'pointer', marginTop: '1rem' }}
+                >
+                    닫기
+                </button>
+            </div>
+            <style>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+            `}</style>
+        </div>
+    );
+};
 
 interface SettingsViewProps {
   currentUser: FirebaseUser | null;
@@ -36,21 +104,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [resetMessage, setResetMessage] = useState('');
-  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
-
-
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredInstallPrompt(e);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    return () => {
-        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
-  }, []);
+  const [showInstallModal, setShowInstallModal] = useState(false);
 
   useEffect(() => {
     const fetchContentProfile = async () => {
@@ -233,24 +287,15 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
     }
   };
   
-  const handleInstallClick = async () => {
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+  const handleInstallClick = () => {
     const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
 
     if (isInStandaloneMode) {
-        alert('앱이 이미 설치되어 있습니다.');
+        alert('앱이 이미 홈 화면에 설치되어 있습니다.');
         return;
     }
     
-    if (deferredInstallPrompt) {
-        deferredInstallPrompt.prompt();
-        await deferredInstallPrompt.userChoice;
-        setDeferredInstallPrompt(null);
-    } else if (isIOS) {
-        alert("iPhone 또는 iPad를 사용하고 계신가요?\n\nSafari 브라우저의 하단 공유(↑) 버튼을 누른 후, '홈 화면에 추가'를 선택하여 Jazzlink를 앱처럼 이용할 수 있습니다.");
-    } else {
-        alert("브라우저 메뉴(⋮ 또는 ≡)에서 '홈 화면에 추가' 또는 '앱 설치'를 선택하여 Jazzlink를 설치할 수 있습니다.");
-    }
+    setShowInstallModal(true);
   };
 
   if (authLoading) {
@@ -269,6 +314,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
   }
 
   return (
+    <>
+    {showInstallModal && <InstallInstructionsModal onClose={() => setShowInstallModal(false)} />}
     <div className="p-6 h-full flex flex-col bg-white dark:bg-jazz-blue-900">
       {currentUser ? (
         <>
@@ -370,6 +417,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ currentUser, currentUserPro
         </div>
       )}
     </div>
+    </>
   );
 };
 

@@ -1,4 +1,5 @@
 
+
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import axios from "axios";
@@ -63,7 +64,7 @@ async function updateVenueFromPlaceId(placeId: string, apiKey: string): Promise<
     functions.logger.info(`Successfully updated venue: ${placeId}`);
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      functions.logger.error(`Error fetching Place ID ${placeId}:`, error.response?.data);
+      functions.logger.error(`Error fetching Place ID ${placeId}:`, error.response?.data || error.message);
     } else {
       functions.logger.error(`An unexpected error occurred for Place ID ${placeId}:`, error);
     }
@@ -93,7 +94,22 @@ export const fetchAndSaveVenue = functions.https
         await updateVenueFromPlaceId(placeId, apiKey);
         return {success: true, message: `Venue ${placeId} updated successfully.`};
       } catch (error) {
-        throw new functions.https.HttpsError("internal", `Failed to update venue ${placeId}.`);
+        let message = `Failed to update venue ${placeId}.`;
+        let details: any = {};
+        if (axios.isAxiosError(error)) {
+          const status = error.response?.status;
+          details = error.response?.data;
+          if (status === 400) {
+            message = `Invalid Place ID: ${placeId}. Please check the ID and try again.`;
+          } else if (status === 403) {
+            message = "Permission denied. Check if the Places API is enabled and the API key is valid with billing enabled.";
+          } else if (status === 404) {
+            message = `Place ID '${placeId}' not found.`;
+          } else {
+            message = `An API error occurred (Status: ${status}). Check function logs for details.`;
+          }
+        }
+        throw new functions.https.HttpsError("internal", message, details);
       }
     });
 

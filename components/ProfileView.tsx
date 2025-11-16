@@ -1,6 +1,4 @@
 
-
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { db, USE_MOCK_DATA } from '../firebase/config';
 import { collection, getDocs, doc, getDoc, query, orderBy, runTransaction, Timestamp } from 'firebase/firestore';
@@ -144,13 +142,16 @@ const VenueDetailModal: React.FC<{ venue: Venue; onClose: () => void; currentUse
                             if (userDoc.exists()) {
                                 const data = userDoc.data();
                                 const accountTypeVal = data.accountType;
-                                newUsers.set(userDoc.id, {
+                                const userForMap: User = {
                                     uid: userDoc.id,
                                     name: typeof data.name === 'string' ? data.name : null,
                                     photo: typeof data.photo === 'string' ? data.photo : null,
                                     email: typeof data.email === 'string' ? data.email : null,
-                                    accountType: (accountTypeVal === 'musician' || accountTypeVal === 'venue_owner' || accountTypeVal === 'general') ? accountTypeVal : undefined
-                                });
+                                };
+                                if (accountTypeVal === 'musician' || accountTypeVal === 'venue_owner' || accountTypeVal === 'general') {
+                                    userForMap.accountType = accountTypeVal;
+                                }
+                                newUsers.set(userDoc.id, userForMap);
                             }
                         });
                         setUsersData(newUsers);
@@ -328,13 +329,16 @@ const MusicianDetailModal: React.FC<{ musician: Musician, onClose: () => void; c
                             if (userDoc.exists()) {
                                 const data = userDoc.data();
                                 const accountTypeVal = data.accountType;
-                                newUsers.set(userDoc.id, {
+                                const userForMap: User = {
                                     uid: userDoc.id,
                                     name: typeof data.name === 'string' ? data.name : null,
                                     photo: typeof data.photo === 'string' ? data.photo : null,
                                     email: typeof data.email === 'string' ? data.email : null,
-                                    accountType: (accountTypeVal === 'musician' || accountTypeVal === 'venue_owner' || accountTypeVal === 'general') ? accountTypeVal : undefined
-                                });
+                                };
+                                if (accountTypeVal === 'musician' || accountTypeVal === 'venue_owner' || accountTypeVal === 'general') {
+                                    userForMap.accountType = accountTypeVal;
+                                }
+                                newUsers.set(userDoc.id, userForMap);
                             }
                         });
                         setUsersData(newUsers);
@@ -510,13 +514,16 @@ const TeamDetailModal: React.FC<{ team: Team, allMusicians: Musician[], onSelect
                             if (userDoc.exists()) {
                                 const data = userDoc.data();
                                 const accountTypeVal = data.accountType;
-                                newUsers.set(userDoc.id, {
+                                const userForMap: User = {
                                     uid: userDoc.id,
                                     name: typeof data.name === 'string' ? data.name : null,
                                     photo: typeof data.photo === 'string' ? data.photo : null,
                                     email: typeof data.email === 'string' ? data.email : null,
-                                    accountType: (accountTypeVal === 'musician' || accountTypeVal === 'venue_owner' || accountTypeVal === 'general') ? accountTypeVal : undefined
-                                });
+                                };
+                                if (accountTypeVal === 'musician' || accountTypeVal === 'venue_owner' || accountTypeVal === 'general') {
+                                    userForMap.accountType = accountTypeVal;
+                                }
+                                newUsers.set(userDoc.id, userForMap);
                             }
                         });
                         setUsersData(newUsers);
